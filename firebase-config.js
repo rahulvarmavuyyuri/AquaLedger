@@ -11,12 +11,13 @@
 
 window.AQUALEDGER_CONFIG = {
   firebase: {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyAuZ5EoAD01az5nKpKQXwTt_bAMMHjQvgg",
+    authDomain: "aqualedzer.firebaseapp.com",
+    projectId: "aqualedzer",
+    storageBucket: "aqualedzer.firebasestorage.app",
+    messagingSenderId: "887982030222",
+    appId: "1:887982030222:web:d40599494b28e3a91e38df",
+    measurementId: "G-243TBR622X"
   },
-  ownerEmails: ["owner@example.com"]
+  ownerEmails: ["rahulvarmavuyyuri@gmail.com"]
 };
