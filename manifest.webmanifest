@@ -1,0 +1,16 @@
+{
+  "name": "AquaLedger",
+  "short_name": "AquaLedger",
+  "description": "Shrimp and fish farm records: tanks, stocking, feed, water quality, medication, mortality and harvest.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#03111b",
+  "theme_color": "#03111b",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

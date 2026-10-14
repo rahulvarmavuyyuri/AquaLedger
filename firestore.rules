@@ -1,0 +1,56 @@
+rules_version = '2';
+
+// AquaLedger access rules.
+// Replace owner@example.com with the farm owner's Google email (the same one as in firebase-config.js),
+// then publish: Firebase console → Firestore Database → Rules → paste this file → Publish.
+//
+// Roles (stored in /access/{email}, managed from the app's Settings → Team access):
+//   admin  – read and write all records, manage the team
+//   staff  – read and write farm records
+//   viewer – read only
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null && request.auth.token.email != null
+        && request.auth.token.email_verified == true;
+    }
+    function myEmail() { return request.auth.token.email.lower(); }
+    function isOwner() {
+      return signedIn() && myEmail() in ['owner@example.com'];
+    }
+    function accessDoc() { return /databases/$(database)/documents/access/$(myEmail()); }
+    function role() {
+      return signedIn() && exists(accessDoc()) ? get(accessDoc()).data.role : '';
+    }
+    function canRead()  { return isOwner() || role() in ['admin', 'staff', 'viewer']; }
+    function canWrite() { return isOwner() || role() in ['admin', 'staff']; }
+    function isAdmin()  { return isOwner() || role() == 'admin'; }
+
+    // Team list: admins manage it; everyone may read their own entry to learn their role.
+    match /access/{email} {
+      allow read: if signedIn() && (isAdmin() || email == myEmail());
+      allow create, update: if isAdmin()
+        && request.resource.data.role in ['admin', 'staff', 'viewer'];
+      allow delete: if isAdmin();
+    }
+
+    // Farm name, currency, water ranges, staff names.
+    match /config/{doc} {
+      allow read: if canRead();
+      allow write: if isAdmin();
+    }
+
+    // Farm records.
+    match /{col}/{id} {
+      allow read: if canRead()
+        && col in ['tanks', 'stocking', 'medication', 'feed', 'water', 'mortality',
+                   'harvest', 'items', 'purchases', 'expenses'];
+      allow write: if canWrite()
+        && col in ['tanks', 'stocking', 'medication', 'feed', 'water', 'mortality',
+                   'harvest', 'items', 'purchases', 'expenses']
+        && (request.resource == null || request.resource.data.size() <= 40);
+    }
+  }
+}
