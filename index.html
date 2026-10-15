@@ -370,6 +370,9 @@ body.gate .app{grid-template-columns:minmax(0,1fr)}
 .gatebox h1{font-size:30px}
 .gatebox p{margin:0;color:var(--muted);max-width:40ch}
 .gatebox .err{min-height:1em}
+.gatebox{padding-bottom:180px}
+.gatebox > *:not(.scene){position:relative;z-index:1}
+.gatebox .scene{position:absolute;left:0;right:0;bottom:0;width:100%;height:170px;pointer-events:none}
 .mark.big{width:72px;height:72px;border-radius:22px;display:grid;place-items:center;background:radial-gradient(circle at 30% 25%,#1d6f78,#0a2f3d);box-shadow:inset 0 0 0 1px rgba(92,225,214,.3),0 14px 40px rgba(0,0,0,.4);animation:breathe 4s ease-in-out infinite}
 .mark.big svg{width:42px;height:42px;stroke:var(--accent);fill:none;stroke-width:1.6;stroke-linecap:round}
 
@@ -416,6 +419,96 @@ body.gate .app{grid-template-columns:minmax(0,1fr)}
   .hbar{grid-template-columns:minmax(0,90px) minmax(0,1fr) auto}
   .phead .acts .btn.hide-m{display:none}
 }
+
+/* ===== Reef illustrations ===== */
+.sea{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.sea svg{display:block;height:auto;overflow:visible}
+.sea .sw{position:absolute;left:0;opacity:.3;will-change:transform;animation:swimX var(--dur,60s) linear infinite;animation-delay:var(--del,0s)}
+.sea .sw.rev{animation-name:swimXr}
+.sea .flip{transform:scaleX(-1)}
+.sea .sw1{top:14%;--dur:58s;--del:-8s}
+.sea .sw2{top:58%;--dur:96s;--del:-40s;opacity:.26}
+.sea .sw3{top:30%;--dur:82s;--del:-22s;opacity:.22}
+.sea .sw4{top:80%;--dur:68s;--del:-50s}
+.sea .sw5{top:44%;--dur:50s;--del:-15s;opacity:.26}
+.sea .jf{position:absolute;bottom:-30vh;opacity:.32;will-change:transform;animation:jrise var(--dur,70s) linear infinite;animation-delay:var(--del,0s)}
+.sea .jf1{right:7%;--dur:74s;--del:-20s}
+.sea .jf2{left:38%;--dur:92s;--del:-62s;opacity:.22}
+@keyframes swimX{from{transform:translateX(-30vw)}to{transform:translateX(115vw)}}
+@keyframes swimXr{from{transform:translateX(115vw)}to{transform:translateX(-30vw)}}
+@keyframes jrise{from{transform:translateY(0)}to{transform:translateY(-150vh)}}
+.bob{animation:bob 5s ease-in-out infinite}
+.bob.slow{animation-duration:8s}
+.bob.flap{animation:flap 4.5s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-10px)}}
+@keyframes flap{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(-8px) scaleY(.82)}}
+.pulse{animation:pulse 3.2s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 30%}
+@keyframes pulse{0%,100%{transform:scale(1,1)}40%{transform:scale(1.08,.88)}70%{transform:scale(.96,1.05)}}
+
+.hero{padding:0}
+.hero-scene{position:relative;min-height:230px;padding:28px 28px 30px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-start}
+.hero-scene .scene{position:absolute;inset:0;width:100%;height:100%}
+.hero-scene::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(6,28,43,.94) 0%,rgba(6,28,43,.7) 34%,rgba(6,28,43,0) 62%);pointer-events:none}
+.hero-scene .hero-top{z-index:2}
+.hero-scene .hero-top h1{text-shadow:0 2px 18px rgba(3,17,27,.6)}
+.hero .hero-stats{margin-top:0;padding:22px 28px 26px;border-top:1px solid rgba(92,225,214,.14);background:linear-gradient(180deg,rgba(3,17,27,.55),rgba(3,17,27,.3))}
+.scene .rays polygon{animation:rayglow 9s ease-in-out infinite}
+@keyframes rayglow{0%,100%{opacity:.5}50%{opacity:1}}
+.scene .sway{transform-box:fill-box;transform-origin:50% 100%;animation:sway 7s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.scene .anem .sway{transform-origin:0 100%}
+.scene .bob{transform-box:fill-box;animation:bob 6s ease-in-out infinite}
+.scene .bob2{animation:bob2 7s ease-in-out infinite}
+@keyframes bob2{0%,100%{transform:translate(0,0)}50%{transform:translate(-18px,-12px)}}
+.scene .school{animation:school 26s linear infinite}
+@keyframes school{from{transform:translate(1260px,70px)}to{transform:translate(-260px,40px)}}
+.scene .glide{animation:glide 44s linear infinite;animation-delay:-12s}
+@keyframes glide{from{transform:translate(-180px,10px)}50%{transform:translate(520px,-6px)}to{transform:translate(1260px,12px)}}
+.scene .jelly-drift{animation:jdrift 12s ease-in-out infinite}
+@keyframes jdrift{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+.scene .crab{animation:crab 9s ease-in-out infinite}
+@keyframes crab{0%,100%{transform:translateX(0)}45%{transform:translateX(70px)}55%{transform:translateX(70px)}}
+.scene .bub{fill:none;stroke:rgba(190,250,245,.55);stroke-width:1.4;animation:bub 8s linear infinite}
+@keyframes bub{from{transform:translateY(0);opacity:0}10%{opacity:1}to{transform:translateY(-320px);opacity:0}}
+
+.tank .water{container-type:inline-size}
+.swimmer{position:absolute;left:8px;bottom:8px;width:40px;opacity:.85;will-change:transform;animation:pace 16s ease-in-out infinite;filter:drop-shadow(0 4px 6px rgba(0,0,0,.35))}
+.swimmer.shrimp{width:50px}
+.swimmer svg{display:block;width:100%;height:auto;overflow:visible}
+@keyframes pace{0%{transform:translateX(0) scaleX(1)}46%{transform:translateX(calc(100cqw - 66px)) scaleX(1)}50%{transform:translateX(calc(100cqw - 66px)) scaleX(-1)}96%{transform:translateX(0) scaleX(-1)}100%{transform:translateX(0) scaleX(1)}}
+.tank:hover .swimmer{animation-duration:7s}
+
+.critter{position:relative;width:150px;height:108px;display:grid;place-items:center;margin-bottom:4px}
+.critter::before{content:"";position:absolute;inset:8px 12px;border-radius:50%;background:radial-gradient(closest-side,rgba(92,225,214,.16),transparent)}
+.critter svg{position:relative;width:auto;height:96px;max-width:150px;overflow:visible;animation:bob 5s ease-in-out infinite;filter:drop-shadow(0 12px 18px rgba(0,0,0,.4))}
+.critter.c-fish svg,.critter.c-crab svg,.critter.c-shrimp svg{height:auto;width:130px}
+.critter.c-turtle svg,.critter.c-manta svg{height:auto;width:148px}
+.critter .cb{position:absolute;bottom:20px;left:62%;width:7px;height:7px;border-radius:50%;border:1.4px solid rgba(190,250,245,.6);animation:cbub 4s linear infinite}
+.critter .cb:nth-child(3){left:70%;width:5px;height:5px;animation-delay:-1.3s}
+.critter .cb:nth-child(4){left:56%;width:4px;height:4px;animation-delay:-2.6s}
+@keyframes cbub{from{transform:translateY(0);opacity:0}15%{opacity:1}to{transform:translateY(-90px);opacity:0}}
+
+.loader{display:flex;align-items:center;gap:14px;color:var(--muted);font-weight:600}
+.loader .lf{width:64px;animation:lf 1.6s ease-in-out infinite}
+.loader .lf svg{display:block;width:100%;height:auto}
+@keyframes lf{0%,100%{transform:translate(0,0) rotate(-4deg)}50%{transform:translate(12px,-6px) rotate(4deg)}}
+
+@media (max-width:900px){.sea .sw3,.sea .sw5,.sea .jf2{display:none}}
+@media (max-width:720px){
+  .hero-scene{min-height:210px;padding:22px 18px 24px}
+  .hero-scene::after{background:linear-gradient(180deg,rgba(6,28,43,.9) 0%,rgba(6,28,43,.55) 55%,rgba(6,28,43,.15) 100%)}
+  .hero .hero-stats{padding:18px}
+  .sea .sw{opacity:.22}
+  .sea .sw1 svg{width:150px}.sea .sw2 svg{width:140px}
+}
+@media (prefers-reduced-motion:reduce){
+  .sea{display:none}
+  .scene *, .swimmer, .critter svg, .critter .cb, .pulse, .bob, .loader .lf{animation:none!important}
+  .critter .cb{display:none}
+  .scene .school{transform:translate(1020px,60px)}
+  .scene .glide{transform:translate(560px,0)}
+  .scene .bub{display:none}
+}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
   .anim .ln{stroke-dashoffset:0}
@@ -450,12 +543,137 @@ body.gate .app{grid-template-columns:minmax(0,1fr)}
     <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></symbol>
     <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
     <symbol id="i-shrimp" viewBox="0 0 24 24"><path d="M19.6 7.6c-2.6-3.4-8-4-11.4-1.2C4.8 9.2 4.9 14.4 8 17.2c2.3 2 5.6 2.3 7.9.8"/><path d="M8 17.2 4.4 20M8 17.2 4.8 15.7M11.4 6.6l1.4 3.4M8.6 9.4l3.1 1.6M8 13.1l3.5-.2M9.6 15.9l2.5-2"/><path d="M19.6 7.6 22 5.2M19.2 8.6l2.7.7"/><circle cx="17.6" cy="8.4" r=".6" fill="currentColor"/></symbol>
+
+    <linearGradient id="gTeal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ff4ea"/><stop offset=".55" stop-color="#2bb3b0"/><stop offset="1" stop-color="#0e5c6b"/></linearGradient>
+    <linearGradient id="gCoral" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc0a8"/><stop offset=".5" stop-color="#ff7b5c"/><stop offset="1" stop-color="#b8423a"/></linearGradient>
+    <linearGradient id="gGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe7a8"/><stop offset=".55" stop-color="#f2b84b"/><stop offset="1" stop-color="#a8661c"/></linearGradient>
+    <linearGradient id="gViolet" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e0d4ff"/><stop offset=".5" stop-color="#a48cff"/><stop offset="1" stop-color="#5440c0"/></linearGradient>
+    <linearGradient id="gBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b4dcff"/><stop offset=".5" stop-color="#5a9bec"/><stop offset="1" stop-color="#1f4f9c"/></linearGradient>
+    <linearGradient id="gShell" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c6e88a"/><stop offset=".5" stop-color="#5ea55a"/><stop offset="1" stop-color="#275e40"/></linearGradient>
+    <linearGradient id="gSkin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b6e6cc"/><stop offset="1" stop-color="#4a8d77"/></linearGradient>
+    <linearGradient id="gManta" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4f86b8"/><stop offset=".5" stop-color="#2a5986"/><stop offset="1" stop-color="#173a5e"/></linearGradient>
+    <radialGradient id="gJelly" cx=".5" cy=".35" r=".7"><stop offset="0" stop-color="#ffe4f7" stop-opacity=".95"/><stop offset=".5" stop-color="#d49cff" stop-opacity=".7"/><stop offset="1" stop-color="#7a5cff" stop-opacity=".25"/></radialGradient>
+
+    <symbol id="c-fish" viewBox="0 0 120 64">
+      <path d="M24 32 L4 12 Q10 32 4 52 Z" style="fill:var(--fin,url(#gTeal))" opacity=".85"/>
+      <path d="M48 12 Q60 -2 80 12 Z" style="fill:var(--fin,url(#gTeal))" opacity=".9"/>
+      <path d="M50 52 Q58 63 70 52 Z" style="fill:var(--fin,url(#gTeal))" opacity=".8"/>
+      <path d="M20 32 C32 8 72 2 102 22 C114 28 114 36 102 42 C72 62 32 56 20 32 Z" style="fill:var(--fish,url(#gTeal))"/>
+      <path d="M30 36 C50 50 80 50 100 40 C80 56 44 56 30 36Z" fill="#fff" opacity=".2"/>
+      <path d="M56 12 C50 24 50 40 56 52" stroke="#fff" stroke-width="5" opacity=".38" fill="none" stroke-linecap="round"/>
+      <path d="M72 11 C66 24 66 40 72 52" stroke="#fff" stroke-width="4" opacity=".28" fill="none" stroke-linecap="round"/>
+      <path d="M88 18 Q82 32 88 46" stroke="#03111b" stroke-width="1.6" opacity=".35" fill="none"/>
+      <path d="M78 36 Q70 48 60 44 Q68 38 78 36Z" style="fill:var(--fin,url(#gTeal))"/>
+      <circle cx="98" cy="27" r="5" fill="#fff"/><circle cx="99" cy="27" r="2.8" fill="#03111b"/><circle cx="100" cy="26" r="1" fill="#fff"/>
+      <path d="M107 35 q3 1 5 -1" stroke="#03111b" stroke-width="1.4" fill="none" opacity=".5"/>
+    </symbol>
+
+    <symbol id="c-shrimp" viewBox="0 0 170 84">
+      <path d="M124 22 C140 8 154 2 168 4" stroke="#ffc9b6" stroke-width="1.4" fill="none" opacity=".85"/>
+      <path d="M122 26 C142 32 156 44 166 60" stroke="#ffc9b6" stroke-width="1.2" fill="none" opacity=".7"/>
+      <g stroke="#ff9473" stroke-width="2" stroke-linecap="round" opacity=".85"><path d="M58 42 l-5 11"/><path d="M68 39 l-4 11"/><path d="M78 37 l-3 11"/><path d="M88 37 l-2 11"/><path d="M104 36 l3 13"/><path d="M110 35 l6 12"/><path d="M114 33 l9 9"/></g>
+      <path d="M42 62 L18 80 L30 66 L10 70 L34 58 Z" style="fill:var(--fin,url(#gCoral))" opacity=".9"/>
+      <path d="M32 60 C28 32 62 14 98 16 C112 16 124 19 132 23 L141 22 L130 28 C126 33 120 37 112 38 C96 39 76 35 62 40 C52 44 46 52 44 62 Z" style="fill:var(--fish,url(#gCoral))"/>
+      <g stroke="#7a2418" stroke-width="1.6" fill="none" opacity=".32" stroke-linecap="round"><path d="M44 36 Q52 46 48 56"/><path d="M56 26 Q64 36 60 44"/><path d="M70 20 Q78 30 74 38"/><path d="M84 17 Q91 27 87 37"/><path d="M98 16 Q104 26 100 37"/></g>
+      <path d="M40 40 C48 26 70 18 96 18" stroke="#fff" stroke-width="3" opacity=".38" fill="none" stroke-linecap="round"/>
+      <circle cx="118" cy="22" r="4" fill="#03111b"/><circle cx="119" cy="21" r="1.2" fill="#fff"/>
+    </symbol>
+
+    <symbol id="c-jelly" viewBox="0 0 80 124">
+      <g fill="none" stroke-linecap="round">
+        <path d="M16 44 C12 60 20 74 14 90 C10 100 16 112 12 122" stroke="#ecd2ff" stroke-width="1.4" opacity=".6"/>
+        <path d="M26 46 C22 64 30 78 25 96 C22 106 27 114 24 120" stroke="#ecd2ff" stroke-width="1.2" opacity=".5"/>
+        <path d="M54 46 C58 64 50 78 55 96 C58 106 53 114 56 120" stroke="#ecd2ff" stroke-width="1.2" opacity=".5"/>
+        <path d="M64 44 C68 60 60 74 66 90 C70 100 64 112 68 122" stroke="#ecd2ff" stroke-width="1.4" opacity=".6"/>
+        <path d="M35 44 C30 62 42 72 35 94" stroke="#ff9ad5" stroke-width="5" opacity=".5"/>
+        <path d="M46 44 C51 62 39 74 46 98" stroke="#ff9ad5" stroke-width="5" opacity=".45"/>
+      </g>
+      <path d="M6 44 C6 10 74 10 74 44 C66 48 58 42 50 46 C42 42 36 48 28 44 C20 48 12 46 6 44Z" fill="url(#gJelly)"/>
+      <path d="M17 34 C20 20 60 20 63 34" stroke="#fff" stroke-width="2" opacity=".4" fill="none" stroke-linecap="round"/>
+      <circle cx="28" cy="24" r="2.4" fill="#fff" opacity=".55"/><circle cx="40" cy="20" r="1.6" fill="#fff" opacity=".5"/><circle cx="50" cy="27" r="2" fill="#fff" opacity=".4"/>
+    </symbol>
+
+    <symbol id="c-turtle" viewBox="0 0 170 110">
+      <g fill="url(#gSkin)">
+        <path d="M104 38 C118 12 146 2 160 8 C148 20 132 34 114 48Z"/>
+        <path d="M104 72 C118 98 146 108 160 102 C148 90 132 76 114 62Z"/>
+        <path d="M44 40 C34 28 20 26 14 32 C22 38 30 44 40 50Z"/>
+        <path d="M44 70 C34 82 20 84 14 78 C22 72 30 66 40 60Z"/>
+        <ellipse cx="138" cy="55" rx="17" ry="12"/>
+      </g>
+      <path d="M30 55 L16 55" stroke="#5f9f86" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="146" cy="49" r="2.2" fill="#03111b"/><circle cx="146" cy="61" r="2.2" fill="#03111b"/>
+      <ellipse cx="80" cy="55" rx="48" ry="36" fill="url(#gShell)"/>
+      <ellipse cx="80" cy="55" rx="46" ry="34" fill="none" stroke="#1f4a30" stroke-width="3" opacity=".45"/>
+      <g fill="none" stroke="#eefad2" stroke-width="1.6" opacity=".45" stroke-linejoin="round">
+        <path d="M70 55 L76 45 L88 45 L94 55 L88 65 L76 65Z"/>
+        <path d="M76 45 L70 24 M88 45 L96 24 M94 55 L124 55 M88 65 L96 86 M76 65 L70 86 M70 55 L36 55"/>
+      </g>
+      <ellipse cx="68" cy="38" rx="24" ry="10" fill="#fff" opacity=".13"/>
+    </symbol>
+
+    <symbol id="c-manta" viewBox="0 0 200 110">
+      <path d="M46 55 L0 55" stroke="#2c5f8a" stroke-width="2" stroke-linecap="round"/>
+      <path d="M156 55 C146 22 112 4 60 2 C82 20 94 36 98 49 L44 55 L98 61 C94 74 82 90 60 108 C112 106 146 88 156 55Z" fill="url(#gManta)"/>
+      <path d="M154 46 C164 41 169 46 164 50Z M154 64 C164 69 169 64 164 60Z" fill="#2c5f8a"/>
+      <path d="M140 40 C120 24 96 14 74 9 M140 70 C120 86 96 96 74 101" stroke="#b4dcff" stroke-width="2" opacity=".3" fill="none"/>
+      <circle cx="120" cy="44" r="3" fill="#fff" opacity=".18"/><circle cx="110" cy="64" r="2.4" fill="#fff" opacity=".15"/><circle cx="132" cy="58" r="2" fill="#fff" opacity=".15"/>
+    </symbol>
+
+    <symbol id="c-seahorse" viewBox="0 0 64 120">
+      <path d="M22 58 C10 56 8 70 20 72Z" fill="#ffe7a8" opacity=".85"/>
+      <path d="M28 6 C38 2 46 8 45 15 L58 16 C61 17 61 22 58 23 L45 24 C46 31 43 37 39 41 C47 49 48 63 40 74 C36 80 35 88 41 94 C47 100 46 112 37 113 C28 114 25 105 31 101 C34 99 33 95 29 92 C20 86 19 73 24 63 C17 55 17 42 23 33 C18 25 20 10 28 6Z" fill="url(#gGold)"/>
+      <path d="M26 7 l1 -6 l3 4 l2 -5 l2 6" fill="#f2b84b"/>
+      <g stroke="#7a4a10" stroke-width="1.4" opacity=".35" fill="none" stroke-linecap="round"><path d="M26 38 h9"/><path d="M24 46 h11"/><path d="M24 54 h12"/><path d="M26 62 h11"/><path d="M28 70 h9"/><path d="M33 80 h6"/></g>
+      <path d="M30 14 C34 12 38 14 38 18" stroke="#fff" stroke-width="2" opacity=".45" fill="none" stroke-linecap="round"/>
+      <circle cx="35" cy="16" r="2.6" fill="#03111b"/><circle cx="36" cy="15" r=".9" fill="#fff"/>
+    </symbol>
+
+    <symbol id="c-crab" viewBox="0 0 120 80">
+      <g stroke="#b8423a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+        <path d="M36 50 L18 62 L12 74"/><path d="M40 55 L26 68 L22 78"/><path d="M84 50 L102 62 L108 74"/><path d="M80 55 L94 68 L98 78"/>
+        <path d="M38 40 L22 26" stroke="#e8604a" stroke-width="5"/><path d="M82 40 L98 26" stroke="#e8604a" stroke-width="5"/>
+        <path d="M52 32 v-9 M68 32 v-9" stroke="#e8604a" stroke-width="2.5"/>
+      </g>
+      <path d="M22 26 C8 24 6 10 16 5 C14 14 20 16 26 14 C28 20 26 24 22 26Z" fill="url(#gCoral)"/>
+      <path d="M98 26 C112 24 114 10 104 5 C106 14 100 16 94 14 C92 20 94 24 98 26Z" fill="url(#gCoral)"/>
+      <ellipse cx="60" cy="46" rx="30" ry="18" fill="url(#gCoral)"/>
+      <ellipse cx="54" cy="39" rx="14" ry="5" fill="#fff" opacity=".2"/>
+      <circle cx="52" cy="21" r="4" fill="#fff"/><circle cx="52.6" cy="21" r="2.2" fill="#03111b"/>
+      <circle cx="68" cy="21" r="4" fill="#fff"/><circle cx="68.6" cy="21" r="2.2" fill="#03111b"/>
+      <path d="M54 51 q6 4 12 0" stroke="#5a1a14" stroke-width="1.6" fill="none" opacity=".5" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="c-octopus" viewBox="0 0 110 120">
+      <g fill="none" stroke="url(#gViolet)" stroke-width="7" stroke-linecap="round">
+        <path d="M34 58 C26 80 10 84 14 100 C16 108 26 106 24 98"/>
+        <path d="M44 62 C40 86 30 96 36 110 C40 116 48 112 44 104"/>
+        <path d="M56 64 C56 88 52 100 58 112"/>
+        <path d="M66 62 C72 86 82 96 76 110 C72 116 64 112 68 104"/>
+        <path d="M76 58 C86 80 100 84 96 100 C94 108 84 106 86 98"/>
+      </g>
+      <path d="M22 50 C18 14 92 14 88 50 C86 66 24 66 22 50Z" fill="url(#gViolet)"/>
+      <ellipse cx="44" cy="28" rx="12" ry="6" fill="#fff" opacity=".22"/>
+      <circle cx="44" cy="46" r="6" fill="#fff"/><circle cx="45" cy="47" r="3.2" fill="#2a1a5e"/>
+      <circle cx="66" cy="46" r="6" fill="#fff"/><circle cx="67" cy="47" r="3.2" fill="#2a1a5e"/>
+      <circle cx="34" cy="34" r="2" fill="#fff" opacity=".35"/><circle cx="72" cy="30" r="2.6" fill="#fff" opacity=".3"/>
+    </symbol>
     <symbol id="i-fish" viewBox="0 0 24 24"><path d="M2.8 12c3-5 9.2-6.4 13.7-2.4L21.2 6v12l-4.7-3.6C12 18.4 5.8 17 2.8 12z"/><path d="M11.2 9.3c.9 1.8.9 3.6 0 5.4"/><circle cx="7.4" cy="11.2" r=".7" fill="currentColor"/></symbol>
     <symbol id="i-logout" viewBox="0 0 24 24"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l-4-4 4-4M6 12h10"/></symbol>
   </defs>
 </svg>
 
 <canvas id="ocean" aria-hidden="true"></canvas>
+<div class="sea" aria-hidden="true">
+  <div class="sw sw1"><div class="bob"><svg viewBox="0 0 300 120" width="210"><use href="#c-fish" x="0" y="0" width="90" height="48"/><use href="#c-fish" x="100" y="30" width="80" height="43"/><use href="#c-fish" x="40" y="62" width="74" height="40"/><use href="#c-fish" x="190" y="4" width="70" height="37"/><use href="#c-fish" x="200" y="70" width="64" height="34"/></svg></div></div>
+  <div class="sw sw2"><div class="bob slow"><svg viewBox="0 0 170 110" width="200"><use href="#c-turtle"/></svg></div></div>
+  <div class="sw sw3 rev"><div class="bob flap"><svg viewBox="0 0 200 110" width="230" class="flip"><use href="#c-manta"/></svg></div></div>
+  <div class="sw sw4"><div class="bob"><svg viewBox="0 0 170 84" width="120"><use href="#c-shrimp"/></svg></div></div>
+  <div class="sw sw5 rev"><div class="bob"><svg viewBox="0 0 240 90" width="150" class="flip" style="--fish:url(#gCoral);--fin:url(#gGold)"><use href="#c-fish" x="0" y="10" width="70" height="37"/><use href="#c-fish" x="80" y="40" width="62" height="33"/><use href="#c-fish" x="150" y="6" width="66" height="35"/></svg></div></div>
+  <div class="jf jf1"><svg viewBox="0 0 80 124" width="70" class="pulse"><use href="#c-jelly"/></svg></div>
+  <div class="jf jf2"><svg viewBox="0 0 80 124" width="48" class="pulse"><use href="#c-jelly"/></svg></div>
+</div>
+
 <div class="vignette" aria-hidden="true"></div>
 
 <div class="app" id="app">
@@ -895,7 +1113,7 @@ function exportMenu(src) {
     <button data-export="csv" data-src="${src}">CSV table<small>.csv</small></button>
     <button data-export="copy" data-src="${src}">${ic("copy")}Copy as text</button></div>` : ""}</div>`;
 }
-function emptyState(icon, title, text, act = "") { return `<div class="empty"><div class="ring">${ic(icon)}</div><h3>${title}</h3><p>${text}</p>${act}</div>`; }
+function emptyState(icon, title, text, act = "") { return `<div class="empty">${critter(icon)}<h3>${title}</h3><p>${text}</p>${act}</div>`; }
 function tankOptions(sel, all = "All tanks", activeOnly = false) {
   return `<option value="">${all}</option>` + tanksSorted().filter(t => !activeOnly || t.status !== "Inactive" || t.id === sel).map(t => `<option value="${t.id}" ${t.id === sel ? "selected" : ""}>${esc(t.code)} · ${esc(t.name)}</option>`).join("");
 }
@@ -1045,7 +1263,7 @@ function dailySeries(rows, k, agg = "avg") {
 /* ---------------- views ---------------- */
 const VIEWS = {};
 function loadingView() {
-  return `<div class="sk" style="height:220px;border-radius:22px"></div><div class="grid g2"><div class="sk" style="height:180px"></div><div class="sk" style="height:180px"></div></div><div class="tanks">${"<div class='sk' style='height:190px'></div>".repeat(3)}</div>`;
+  return `<div class="loader"><div class="lf"><svg viewBox="0 0 120 64" aria-hidden="true"><use href="#c-fish"/></svg></div><span>Diving into your records…</span></div><div class="sk" style="height:220px;border-radius:22px"></div><div class="grid g2"><div class="sk" style="height:180px"></div><div class="sk" style="height:180px"></div></div><div class="tanks">${"<div class='sk' style='height:190px'></div>".repeat(3)}</div>`;
 }
 function demoBanner() {
   if (S.mode === "local") return `<div class="banner">${ic("alert")}<span class="grow">${esc(S.demoReason || "You're viewing a sample farm because this view isn't connected to shared storage. Sign in to claude.ai and open the page link to see and keep your farm's records; changes here are not saved.")}</span></div>`;
@@ -1064,11 +1282,11 @@ VIEWS.dashboard = () => {
   const t0 = today();
   const active = tanksSorted().filter(t => t.status !== "Inactive");
   if (!S.tanks.length) {
-    return seedingBanner() + `<section class="hero"><div class="hero-top"><div><div class="greet">${greet()}</div><h1>Set up your farm in three steps</h1></div></div>
+    return seedingBanner() + `<section class="hero"><div class="hero-scene">${scene()}<div class="hero-top"><div><div class="greet">${greet()}</div><h1>Set up your farm in three steps</h1></div></div></div>
       <div class="hero-stats" style="grid-template-columns:repeat(3,minmax(0,1fr))">
       <div class="stat"><div class="k">Step 1</div><div class="v" style="font-size:20px">Add your tanks</div><div class="s">ID, capacity, species</div></div>
       <div class="stat"><div class="k">Step 2</div><div class="v" style="font-size:20px">Record stocking</div><div class="s">Seed count per tank</div></div>
-      <div class="stat"><div class="k">Step 3</div><div class="v" style="font-size:20px">Log daily</div><div class="s">Feed, water, mortality</div></div></div>${waves()}</section>
+      <div class="stat"><div class="k">Step 3</div><div class="v" style="font-size:20px">Log daily</div><div class="s">Feed, water, mortality</div></div></div></section>
       <section class="panel">${emptyState("shrimp", "No tanks yet", "Add your first tank to start tracking stock, water quality and feed. Or load a sample farm with three shrimp ponds and a fish pond to explore every screen first; it's marked as sample and removable in one step.",
       `<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center" class="w"><button class="btn pri" data-act="add" data-mod="tanks">${ic("plus")}Add a tank</button>${S.seeding ? "" : `<button class="btn" data-act="load-sample">Load sample farm</button>`}</div>`)}</section>`;
   }
@@ -1090,16 +1308,16 @@ VIEWS.dashboard = () => {
   const doSeries = active.map(t => ({ name: t.code, color: tankColor(t.id), pts: dailySeries(S.water.filter(w => w.tankId === t.id && w.date >= f14), "do") })).filter(s => s.pts.length);
   const recent = recentEvents(null, 7);
   return demoBanner() + seedingBanner() + `
-  <section class="hero">
+  <section class="hero"><div class="hero-scene">${scene()}
     <div class="hero-top"><div><div class="greet">${greet()} · ${fdate(t0, 1)}</div><h1>${esc(S.settings.farmName || "Your farm")} today</h1></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">${al.filter(a => a.sev === "crit").length ? `<span class="chip crit"><span class="dot"></span>${al.filter(a => a.sev === "crit").length} critical</span>` : ""}${al.filter(a => a.sev === "warn").length ? `<span class="chip warn"><span class="dot"></span>${al.filter(a => a.sev === "warn").length} to check</span>` : ""}${!al.some(a => a.sev !== "info") ? `<span class="chip ok"><span class="dot"></span>All tanks in range</span>` : ""}</div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${al.filter(a => a.sev === "crit").length ? `<span class="chip crit"><span class="dot"></span>${al.filter(a => a.sev === "crit").length} critical</span>` : ""}${al.filter(a => a.sev === "warn").length ? `<span class="chip warn"><span class="dot"></span>${al.filter(a => a.sev === "warn").length} to check</span>` : ""}${!al.some(a => a.sev !== "info") ? `<span class="chip ok"><span class="dot"></span>All tanks in range</span>` : ""}</div></div></div>
     <div class="hero-stats">
       <div class="stat big"><div class="k">Live stock across ${active.length} tanks</div><div class="v"><span ${lc.u ? `data-count="${(live / (lc.u === "lakh" ? 1e5 : 1e7)).toFixed(2)}" data-dp="2"` : `data-count="${live}"`}>${lc.n}</span><small>${lc.u || "pcs"}</small></div></div>
       <div class="stat"><div class="k">Avg survival</div><div class="v">${avgSurv == null ? "—" : `<span data-count="${(avgSurv * 100).toFixed(1)}" data-dp="1">${nfx(avgSurv * 100, 1)}</span>%`}</div><div class="s">current cycles</div></div>
       <div class="stat"><div class="k">Feed today</div><div class="v"><span data-count="${feedToday.toFixed(1)}" data-dp="1">${nfx(feedToday, 1)}</span> kg</div><div class="s">${S.feed.filter(f => f.date === t0).length} feedings logged</div></div>
       <div class="stat"><div class="k">Harvest · ${MON[+month.slice(5) - 1]}</div><div class="v"><span data-count="${sum(hvM, "qty").toFixed(0)}">${nf(sum(hvM, "qty"))}</span> kg</div><div class="s">${hvM.length} harvests</div></div>
       <div class="stat"><div class="k">Revenue ${yr}</div><div class="v">${moneyC(rev)}</div><div class="s">from harvest sales</div></div>
-    </div>${waves()}
+    </div>
   </section>
   <div class="grid g-dash">
     <section class="panel"><div class="ph"><div><h2>Needs attention</h2><p>Checked against your water ranges, stock levels and withdrawal periods</p></div></div>
@@ -1115,6 +1333,38 @@ VIEWS.dashboard = () => {
   </div>`;
 };
 function greet() { const h = new Date().getHours(); return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening"; }
+
+function scene() {
+  const fishSchool = [[0, 0, 46], [52, 22, 40], [16, 44, 38], [96, 6, 36], [104, 46, 34], [140, 28, 30], [64, 64, 30]]
+    .map(([x, y, w]) => `<use href="#c-fish" transform="translate(${x + w} ${y}) scale(-1 1)" width="${w}" height="${w * .53}"/>`).join("");
+  const bubbles = [[640, 0], [700, 2.5], [905, 1.2], [1060, 4], [1150, 3], [780, 5.5], [990, 6.5]]
+    .map(([x, d], i) => `<circle class="bub" cx="${x}" cy="300" r="${3 + (i % 3) * 2}" style="animation-delay:-${d}s;animation-duration:${7 + (i % 4)}s"/>`).join("");
+  return `<svg class="scene" viewBox="0 0 1200 300" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="gRay" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bff7f2" stop-opacity=".22"/><stop offset="1" stop-color="#bff7f2" stop-opacity="0"/></linearGradient>
+      <linearGradient id="gSand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d6c74"/><stop offset="1" stop-color="#123642"/></linearGradient>
+    </defs>
+    <g class="rays"><polygon points="760,0 830,0 690,300 590,300" fill="url(#gRay)"/><polygon points="930,0 970,0 900,300 830,300" fill="url(#gRay)" style="animation-delay:-3s"/><polygon points="1080,0 1140,0 1110,300 1010,300" fill="url(#gRay)" style="animation-delay:-6s"/></g>
+    <path d="M520 300 C580 250 640 268 690 240 C730 216 770 252 820 232 C870 210 910 244 960 222 C1010 200 1060 238 1110 214 C1150 198 1180 222 1200 210 V300Z" fill="#0b3444" opacity=".75"/>
+    <g class="glide"><use href="#c-turtle" x="0" y="20" width="120" height="78"/></g>
+    <g class="sway" style="animation-duration:7s"><path d="M640 300 C620 250 660 220 640 170 C626 132 656 104 646 64" stroke="#2f8f6e" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M640 210 q-18 -6 -24 -22 M650 150 q18 -4 26 -20 M646 100 q-16 -2 -22 -16" stroke="#3fae84" stroke-width="7" fill="none" stroke-linecap="round"/></g>
+    <g class="sway" style="animation-duration:9s;animation-delay:-2s"><path d="M672 300 C690 260 662 230 680 196 C694 168 670 140 682 110" stroke="#257a5e" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M680 240 q16 -6 22 -20 M682 170 q-16 -4 -22 -18" stroke="#33a07a" stroke-width="6" fill="none" stroke-linecap="round"/></g>
+    <g class="bob2"><use href="#c-shrimp" x="700" y="96" width="160" height="79"/></g>
+    <g class="school">${fishSchool}</g>
+    <g class="jelly-drift"><g class="pulse"><use href="#c-jelly" x="960" y="44" width="52" height="80"/></g></g>
+    <g class="sway" style="animation-duration:8s;animation-delay:-4s"><path d="M1132 300 C1112 252 1104 222 1112 190 M1132 300 C1132 250 1142 212 1150 186 M1132 300 C1152 262 1170 234 1186 216" stroke="#a48cff" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M1106 196 C1120 168 1172 170 1190 214 L1132 300Z" fill="#a48cff" opacity=".32"/></g>
+    <g class="bob"><use href="#c-seahorse" x="1066" y="118" width="36" height="68"/></g>
+    <g class="sway" style="animation-duration:6s"><path d="M1040 300 V246 M1040 266 L1012 228 V200 M1040 254 L1070 214 V186 M1012 228 L992 210 M1070 214 L1094 198 M1040 246 V206" stroke="#ff8a6b" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+    <ellipse cx="934" cy="292" rx="48" ry="26" fill="#f2b84b"/><path d="M898 288 q8 -12 16 0 t16 0 t16 0 t16 0 M906 300 q8 -10 16 0 t16 0 t16 0" stroke="#a8661c" stroke-width="3" fill="none" opacity=".6"/>
+    <g class="anem">${[-30, -18, -6, 6, 18, 30].map((a, i) => `<path class="sway" style="animation-duration:${3 + i % 3}s;animation-delay:-${i * .4}s" d="M866 296 q${a * .4} -24 ${a} -42" stroke="#ff9ad5" stroke-width="6" fill="none" stroke-linecap="round"/>`).join("")}<ellipse cx="866" cy="296" rx="18" ry="8" fill="#d0609e"/></g>
+    <path d="M480 292 C680 270 900 288 1200 272 V300 H480Z" fill="url(#gSand)"/>
+    <g class="crab"><use href="#c-crab" x="770" y="250" width="58" height="39"/></g>
+    <g class="bubbles">${bubbles}</g>
+  </svg>`;
+}
+const CRIT = { shrimp: "shrimp", seed: "shrimp", tank: "fish", feed: "fish", drop: "jelly", pill: "octopus", pulse: "turtle", net: "crab", box: "crab", coin: "seahorse", chart: "manta", grid: "seahorse" };
+const CVB = { fish: "0 0 120 64", shrimp: "0 0 170 84", jelly: "0 0 80 124", turtle: "0 0 170 110", manta: "0 0 200 110", seahorse: "0 0 64 120", crab: "0 0 120 80", octopus: "0 0 110 120" };
+function critter(icon) { const n = CRIT[icon] || "fish"; return `<div class="critter c-${n}"><svg viewBox="${CVB[n]}" aria-hidden="true"><use href="#c-${n}"/></svg><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>`; }
 function waves() {
   const p = "M0 40 C 100 10, 200 70, 300 40 S 500 10, 600 40 S 800 70, 900 40 S 1100 10, 1200 40 V 90 H 0 Z";
   return `<div class="waves" aria-hidden="true"><svg class="w1" viewBox="0 0 1200 90" preserveAspectRatio="none"><path d="${p}"/></svg><svg class="w2" viewBox="0 0 1200 90" preserveAspectRatio="none" style="bottom:-8px"><path d="${p}"/></svg></div>`;
@@ -1124,7 +1374,7 @@ function tankCard(t) {
   const fill = c.stocked ? Math.max(8, Math.min(70, c.current / c.stocked * 70)) : 6;
   const cc = compact(c.current);
   return `<a class="tank ${t.status === "Inactive" ? "inactive" : ""}" href="#tank-${t.id}">
-    <div class="water" style="height:${fill}%"></div>
+    <div class="water" style="height:${fill}%">${c.current ? `<span class="swimmer ${t.species === "Fish" ? "fish" : "shrimp"}" style="animation-delay:-${(t.code || "").length * 2.3 % 9}s"><svg viewBox="${t.species === "Fish" ? CVB.fish : CVB.shrimp}" aria-hidden="true"><use href="#c-${t.species === "Fish" ? "fish" : "shrimp"}"/></svg></span>` : ""}</div>
     <div class="tank-h"><div><span class="tcode">${esc(t.code)}</span><h3 style="margin-top:8px">${esc(t.name)}</h3><div class="loc">${esc(t.location || "")}${t.capacity ? ` · ${nfx(t.capacity)} ${esc(t.capUnit || "")}` : ""}</div></div>
       ${spIcon(t.species)}</div>
     <div class="tank-n">${c.current ? `<span class="v">${cc.n}</span><span class="u">${cc.u ? cc.u + " " : ""}live${c.stocked ? ` · ${nfx(c.survival * 100, 1)}% survival` : ""}</span>` : `<span class="v" style="font-size:20px;color:var(--muted)">${c.stocked || cycles(t.id).length > 1 ? "Harvested · ready to restock" : "Not stocked"}</span>`}</div>
@@ -1735,12 +1985,12 @@ function authView() {
   return `<section class="gatebox"><div class="mark big"><svg viewBox="0 0 24 24"><use href="#i-shrimp"/></svg></div>
     <h1>AquaLedger</h1><p>Farm records for tanks, stocking, feed, water quality, medication, mortality and harvest. Sign in with the Google account your farm owner added.</p>
     <button class="btn pri" data-act="signin" style="height:48px;padding:0 22px;font-size:15px">Continue with Google</button>
-    <p class="err" id="autherr" role="alert"></p>${waves()}</section>`;
+    <p class="err" id="autherr" role="alert"></p>${scene()}</section>`;
 }
 function pendingView() {
   return `<section class="gatebox"><div class="mark big"><svg viewBox="0 0 24 24"><use href="#i-shrimp"/></svg></div>
     <h1>Waiting for access</h1><p>You're signed in as <b>${esc(S.uid || "")}</b>, but this account hasn't been added to the farm yet. Ask the farm owner to add this email under Settings, Team access, then reload this page.</p>
-    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="btn" data-act="signout">${ic("logout")}Use another account</button><button class="btn pri" onclick="location.reload()">Check again</button></div>${waves()}</section>`;
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="btn" data-act="signout">${ic("logout")}Use another account</button><button class="btn pri" onclick="location.reload()">Check again</button></div>${scene()}</section>`;
 }
 function authMsg(e) {
   const c = e && e.code;
