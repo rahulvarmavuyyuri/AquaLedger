@@ -20,9 +20,9 @@ jobs:
           OWNER=$(grep -oP 'ownerEmails:\s*\["\K[^"]+' firebase-config.js)
           SITE="https://${GITHUB_REPOSITORY_OWNER,,}.github.io/${GITHUB_REPOSITORY#*/}/"
           HOST="${GITHUB_REPOSITORY_OWNER,,}.github.io"
-          ok(){ echo "PASS  $1"; echo "| ✅ | $1 |" >> "$GITHUB_STEP_SUMMARY"; }
-          bad(){ echo "TODO  $1"; echo "| ❌ | $1 |" >> "$GITHUB_STEP_SUMMARY"; FAIL=1; }
-          info(){ echo "INFO  $1"; echo "| ℹ️ | $1 |" >> "$GITHUB_STEP_SUMMARY"; }
+          ok(){ echo "::notice title=PASS::$1"; echo "| ✅ | $1 |" >> "$GITHUB_STEP_SUMMARY"; }
+          bad(){ echo "::error title=TODO::$1"; echo "| ❌ | $1 |" >> "$GITHUB_STEP_SUMMARY"; FAIL=1; }
+          info(){ echo "::notice title=INFO::$1"; echo "| ℹ️ | $1 |" >> "$GITHUB_STEP_SUMMARY"; }
           echo "| | Check |" >> "$GITHUB_STEP_SUMMARY"; echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
 
           # 1. Config filled in
