@@ -1,7 +1,7 @@
 rules_version = '2';
 
 // AquaLedger access rules.
-// Owner: the farm owner's Google email below must match ownerEmails in firebase-config.js.
+// Owners: the Google emails in isOwner() below must match ownerEmails in firebase-config.js.
 // To publish: Firebase console → Firestore Database → Rules → paste this file → Publish.
 //
 // Roles (stored in /access/{email}, managed from the app's Settings → Team access):
@@ -18,7 +18,7 @@ service cloud.firestore {
     }
     function myEmail() { return request.auth.token.email.lower(); }
     function isOwner() {
-      return signedIn() && myEmail() in ['rahulvarmavuyyuri@gmail.com'];
+      return signedIn() && myEmail() in ['rahulvarmavuyyuri@gmail.com', 'rahulvarma0204@gmail.com'];
     }
     function accessDoc() { return /databases/$(database)/documents/access/$(myEmail()); }
     function role() {

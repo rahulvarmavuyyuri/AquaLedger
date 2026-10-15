@@ -19,5 +19,5 @@ window.AQUALEDGER_CONFIG = {
     appId: "1:887982030222:web:d40599494b28e3a91e38df",
     measurementId: "G-243TBR622X"
   },
-  ownerEmails: ["rahulvarmavuyyuri@gmail.com"]
+  ownerEmails: ["rahulvarmavuyyuri@gmail.com", "rahulvarma0204@gmail.com"]
 };

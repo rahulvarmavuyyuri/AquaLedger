@@ -17,7 +17,6 @@ jobs:
         run: |
           KEY=$(grep -oP 'apiKey:\s*"\K[^"]+' firebase-config.js)
           PROJECT=$(grep -oP 'projectId:\s*"\K[^"]+' firebase-config.js)
-          OWNER=$(grep -oP 'ownerEmails:\s*\["\K[^"]+' firebase-config.js)
           SITE="https://${GITHUB_REPOSITORY_OWNER,,}.github.io/${GITHUB_REPOSITORY#*/}/"
           HOST="${GITHUB_REPOSITORY_OWNER,,}.github.io"
           ok(){ echo "::notice title=PASS::$1"; echo "| ✅ | $1 |" >> "$GITHUB_STEP_SUMMARY"; }
@@ -27,8 +26,11 @@ jobs:
 
           # 1. Config filled in
           if [[ "$KEY" == YOUR_* || -z "$KEY" ]]; then bad "firebase-config.js still has placeholder keys"; else ok "firebase-config.js has keys for project $PROJECT"; fi
-          if [[ "$OWNER" == "owner@example.com" ]]; then bad "Owner email is still owner@example.com"; else ok "Owner email set ($OWNER)"; fi
-          grep -q "'$OWNER'" firestore.rules && ok "firestore.rules owner matches firebase-config.js" || bad "firestore.rules owner email doesn't match firebase-config.js"
+          OWNERS=$(grep -oP 'ownerEmails:\s*\[\K[^\]]+' firebase-config.js | grep -oP '[^"\s,]+@[^"\s,]+')
+          if [[ -z "$OWNERS" || "$OWNERS" == *owner@example.com* ]]; then bad "Owner email is still the placeholder owner@example.com"; else ok "Owner emails set: $(echo $OWNERS | sed 's/ /, /g')"; fi
+          for O in $OWNERS; do
+            grep -q "'$O'" firestore.rules && ok "Owner $O is in firestore.rules" || bad "Owner $O is in firebase-config.js but missing from firestore.rules"
+          done
 
           # 2. Site live with current config
           CODE=$(curl -s -o /dev/null -w "%{http_code}" "$SITE")
@@ -62,6 +64,6 @@ jobs:
             404) bad "Firestore database not created: Firebase → Build → Firestore Database → Create database" ;;
             *)   bad "Firestore check returned HTTP $FCODE: $(echo "$FBODY" | grep -oP '"message":\s*"\K[^"]+' | head -1)" ;;
           esac
-          info "Whether AquaLedger's own rules (not just Firebase's default lock) are published can only be confirmed by signing in as $OWNER: if you reach the dashboard, they are"
+          info "Whether AquaLedger's own rules (not just Firebase's default lock) are published can only be confirmed by signing in as an owner: if you reach the dashboard, they are"
 
           exit ${FAIL:-0}
