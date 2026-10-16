@@ -358,6 +358,11 @@ textarea.in{height:auto;min-height:76px;padding:10px 12px;resize:vertical}
 
 body.ro .w{display:none!important}
 
+/* tank status labels */
+.tchips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.tchips a{text-decoration:none;transition:transform .2s cubic-bezier(.2,.8,.2,1)}
+.tchips a:hover{transform:translateY(-1px)}
+.tcount{display:inline-grid;place-items:center;min-width:20px;height:18px;padding:0 5px;margin-left:4px;border-radius:9px;font-size:11px;background:rgba(92,225,214,.12);color:var(--fg)}
 /* account + sign-in gate */
 .acct{display:flex;align-items:center;gap:10px;padding:10px;border-radius:13px;background:rgba(3,17,27,.45);border:1px solid var(--line-soft)}
 .acct .av{flex:none;width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-weight:700;font-family:var(--font-display)}
@@ -1312,7 +1317,7 @@ VIEWS.dashboard = () => {
     <div class="hero-top"><div><div class="greet">${greet()} · ${fdate(t0, 1)}</div><h1>${esc(S.settings.farmName || "Your farm")} today</h1></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">${al.filter(a => a.sev === "crit").length ? `<span class="chip crit"><span class="dot"></span>${al.filter(a => a.sev === "crit").length} critical</span>` : ""}${al.filter(a => a.sev === "warn").length ? `<span class="chip warn"><span class="dot"></span>${al.filter(a => a.sev === "warn").length} to check</span>` : ""}${!al.some(a => a.sev !== "info") ? `<span class="chip ok"><span class="dot"></span>All tanks in range</span>` : ""}</div></div></div>
     <div class="hero-stats">
-      <div class="stat big"><div class="k">Live stock across ${active.length} tanks</div><div class="v"><span ${lc.u ? `data-count="${(live / (lc.u === "lakh" ? 1e5 : 1e7)).toFixed(2)}" data-dp="2"` : `data-count="${live}"`}>${lc.n}</span><small>${lc.u || "pcs"}</small></div></div>
+      <div class="stat big"><div class="k">Live stock</div><div class="v"><span ${lc.u ? `data-count="${(live / (lc.u === "lakh" ? 1e5 : 1e7)).toFixed(2)}" data-dp="2"` : `data-count="${live}"`}>${lc.n}</span><small>${lc.u || "pcs"}</small></div>${tankChips()}</div>
       <div class="stat"><div class="k">Avg survival</div><div class="v">${avgSurv == null ? "—" : `<span data-count="${(avgSurv * 100).toFixed(1)}" data-dp="1">${nfx(avgSurv * 100, 1)}</span>%`}</div><div class="s">current cycles</div></div>
       <div class="stat"><div class="k">Feed today</div><div class="v"><span data-count="${feedToday.toFixed(1)}" data-dp="1">${nfx(feedToday, 1)}</span> kg</div><div class="s">${S.feed.filter(f => f.date === t0).length} feedings logged</div></div>
       <div class="stat"><div class="k">Harvest · ${MON[+month.slice(5) - 1]}</div><div class="v"><span data-count="${sum(hvM, "qty").toFixed(0)}">${nf(sum(hvM, "qty"))}</span> kg</div><div class="s">${hvM.length} harvests</div></div>
@@ -1332,6 +1337,10 @@ VIEWS.dashboard = () => {
     <section class="panel"><div class="ph"><div><h2>Feed given, 14 days</h2><p>All tanks · kg per day</p></div></div>${barChart({ labels: feedDays, values: feedDays.map(d => fmap[d] || 0), color: "var(--accent)", unit: "kg", name: "Feed", label: "Daily feed" })}</section>
   </div>`;
 };
+function tankChips() {
+  const all = tanksSorted(), act = all.filter(t => t.status !== "Inactive").length, ina = all.length - act;
+  return `<div class="tchips"><a href="#tanks" data-act="tankf" data-f="active" class="chip ok"><span class="dot"></span>${act} active ${act === 1 ? "tank" : "tanks"}</a><a href="#tanks" data-act="tankf" data-f="inactive" class="chip"><span class="dot"></span>${ina} inactive</a></div>`;
+}
 function greet() { const h = new Date().getHours(); return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening"; }
 
 function scene() {
@@ -1403,9 +1412,13 @@ function tlItem({ mod, r }) { const [a, b] = evText(mod, r); return `<div class=
 
 VIEWS.tanks = () => {
   if (S.mode === "loading") return loadingView();
-  const ts = tanksSorted();
+  const all = tanksSorted(), tf = S.tankFilter || "all";
+  const ts = all.filter(t => tf === "all" || (tf === "active" ? t.status !== "Inactive" : t.status === "Inactive"));
+  const nA = all.filter(t => t.status !== "Inactive").length;
+  const tabs = all.length ? `<div class="tabs" role="tablist" style="align-self:flex-start">${[["all", "All", all.length], ["active", "Active", nA], ["inactive", "Inactive", all.length - nA]].map(([k, l, n]) => `<button role="tab" aria-selected="${tf === k}" class="${tf === k ? "on" : ""}" data-act="tankf" data-f="${k}">${l} <span class="tcount">${n}</span></button>`).join("")}</div>` : "";
   const add = `<button class="btn pri w" data-act="add" data-mod="tanks">${ic("plus")}Add tank</button>`;
   return demoBanner() + phead("Tank master", "Tanks", "Every pond and tank on the farm with its live stock. Open one for its full history.", `${exportMenu("mod:tanks")}${add}`) +
+    tabs + (all.length && !ts.length ? `<section class="panel">${emptyState("tank", tf === "inactive" ? "No inactive tanks" : "No active tanks", tf === "inactive" ? "Every tank is in use. Tanks you mark Inactive in the register appear here." : "Mark a tank Active in the register to start logging it.")}</section>` : "") +
     (ts.length ? `<div class="tanks">${ts.map(tankCard).join("")}</div>` + `<section class="panel"><div class="ph"><div><h2>Tank register</h2><p>Tap a row to edit details or change status</p></div></div>${tableHTML("tanks", ts)}</section>`
       : `<section class="panel">${emptyState("tank", "No tanks yet", "Add each pond or tank with its ID, capacity and species.", `<button class="btn pri w" data-act="add" data-mod="tanks">${ic("plus")}Add the first tank</button>`)}</section>`);
 };
@@ -1898,6 +1911,7 @@ document.addEventListener("click", e => {
     case "menu": S.menu = S.menu === a.dataset.src ? null : a.dataset.src; render(); break;
     case "quick": openSheet(`<h3>Log an entry</h3><div class="qgrid">${LOGS.map(([m, l, s]) => `<button data-act="add" data-mod="${m}"><span class="ic">${ic(M[m].icon)}</span><span>${l}<small>${s}</small></span></button>`).join("")}</div>`); break;
     case "more": openSheet(`<h3>All sections</h3><div class="qgrid">${NAV.flatMap(n => n[1]).map(([k, l, i]) => `<a href="#${k}"><span class="ic">${ic(i)}</span>${l}</a>`).join("")}</div>`); break;
+    case "tankf": S.tankFilter = a.dataset.f; if (S.route.name === "tanks") { S.forceAnim = true; render(); } break;
     case "more-rows": S.lim[a.dataset.mod] = (S.lim[a.dataset.mod] || 60) + 60; render(); break;
     case "del-ask": $("#delzone").innerHTML = `<span class="confirm">Delete this entry? <button type="button" class="btn sm danger" data-act="del-yes">Delete</button><button type="button" class="btn sm ghost" data-act="del-no">Keep</button></span>`; break;
     case "del-no": $("#delzone").innerHTML = `<button type="button" class="btn ghost" data-act="del-ask" style="color:var(--crit)">Delete</button>`; break;
