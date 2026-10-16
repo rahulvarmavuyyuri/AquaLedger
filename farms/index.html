@@ -364,6 +364,10 @@ body.ro .w{display:none!important}
 .tchips a:hover{transform:translateY(-1px)}
 .tcount{display:inline-grid;place-items:center;min-width:20px;height:18px;padding:0 5px;margin-left:4px;border-radius:9px;font-size:11px;background:rgba(92,225,214,.12);color:var(--fg)}
 /* multi-farm */
+.diag{border-color:rgba(255,111,111,.45);background:linear-gradient(180deg,rgba(80,20,24,.55),rgba(40,12,16,.5))}
+.diag h2{display:flex;align-items:center;gap:8px;color:#ffd2d2}
+.diag-steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;color:var(--fg)}
+.diag-steps .mono{overflow-wrap:anywhere;color:var(--accent)}
 .farmsw{display:flex;flex-direction:column;gap:6px;padding:0 4px}
 .farmsw label{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);padding:0 8px}
 .farmsw select{height:40px;font-weight:600}
@@ -2064,7 +2068,7 @@ async function bootFirebase(cfg) {
       if (S.farmId) { const m = S.farms.find(f => f.id === S.farmId), r = m ? m.role : null; if (r !== S.role && !(S.isSeller && !r)) return openFarm(S.farmId); }
       ready(); renderNav();
     }, () => { gotMine = true; ready(); }));
-    if (S.isSeller) rootUnsubs.push(FDB.collection("farms").onSnapshot(snap => { S.allFarms = snap.docs.map(d => ({ id: d.id, ...d.data() })); gotAll = true; ready(); render(); }, () => { gotAll = true; ready(); }));
+    if (S.isSeller) rootUnsubs.push(FDB.collection("farms").onSnapshot(snap => { S.farmsErr = null; S.allFarms = snap.docs.map(d => ({ id: d.id, ...d.data() })); gotAll = true; ready(); render(); }, err => { S.farmsErr = (err && err.code) || "unknown"; gotAll = true; ready(); render(); }));
   });
 }
 function farmChoices() {
@@ -2152,7 +2156,17 @@ VIEWS.admin = () => {
   if (!S.isSeller) return emptyState("grid", "Provider page", "Only the AquaLedger provider account can manage farms.");
   const farms = [...S.allFarms].sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
   const paused = farms.filter(f => f.status === "paused").length;
-  return phead("Provider", "All farms", "Create a private space for each client farm and add its owner. The owner then adds their own staff. Pause a farm when its subscription lapses: its team keeps read-only access until you resume it.", "") +
+  const diag = S.farmsErr ? `<section class="panel diag"><div class="ph"><div><h2>${ic("alert")} The database is refusing your provider account</h2><p>Signed in as <b>${esc(S.uid)}</b>. Firebase answered: <span class="mono">${esc(S.farmsErr)}</span></p></div></div>
+      ${S.farmsErr === "permission-denied" ? `<ol class="diag-steps">
+        <li><b>Missing step: the farms security rules are not published in the <span class="mono">aqualedger-farms</span> project.</b> A new database blocks everyone until they are.</li>
+        <li>Open <span class="mono">raw.githubusercontent.com/rahulvarmavuyyuri/AquaLedger/main/farms/firestore.rules</span> → Select all → Copy.</li>
+        <li>Open <span class="mono">console.firebase.google.com/project/aqualedger-farms/firestore/rules</span> (top left must say <b>aqualedger-farms</b>) → select all in the editor → Delete → Paste → <b>Publish</b>.</li>
+        <li>The second line of the published rules must read <span class="mono">// AquaLedger multi-farm access rules.</span></li>
+        <li>Reload this page. This box disappears when it works.</li></ol>`
+      : S.farmsErr === "unavailable" ? `<p>No connection to the database right now. Check your internet and reload.</p>`
+      : S.farmsErr === "failed-precondition" || S.farmsErr === "not-found" ? `<p><b>Missing step: the Firestore database is not created</b> in <span class="mono">aqualedger-farms</span>. Firebase console → Build → Firestore Database → Create database (Production mode).</p>`
+      : `<p>Send this message to your developer.</p>`}</section>` : "";
+  return diag + phead("Provider", "All farms", "Create a private space for each client farm and add its owner. The owner then adds their own staff. Pause a farm when its subscription lapses: its team keeps read-only access until you resume it.", "") +
     `<div class="kpis"><div class="kpi"><div class="k">Farms</div><div class="v">${farms.length}</div><div class="s">client spaces</div></div>
       <div class="kpi pos"><div class="k">Active</div><div class="v">${farms.length - paused}</div><div class="s">can add records</div></div>
       <div class="kpi ${paused ? "neg" : ""}"><div class="k">Paused</div><div class="v">${paused}</div><div class="s">read-only</div></div></div>
@@ -2182,7 +2196,7 @@ async function createFarm() {
   b.set(FDB.doc(`memberships/${owner}/farms/${fid}`), { role: "owner", farmName: name });
   b.set(FDB.doc(`farms/${fid}/config/settings`), { farmName: name, currency: "₹" });
   try { await b.commit(); toast(`${name} created. ${owner} can sign in now.`); ["nf_name", "nf_loc", "nf_owner"].forEach(id => $("#" + id).value = ""); S.setDirty = false; }
-  catch (e) { toast(dbErr(e), true); }
+  catch (e) { if (e && e.code === "permission-denied") { S.farmsErr = "permission-denied"; render(); toast("Blocked by the database: publish the farms rules in aqualedger-farms (see the red box at the top).", true); } else toast(dbErr(e), true); }
 }
 
 async function loadSampleFb(sd, ORDER, total) {
