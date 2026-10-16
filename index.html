@@ -1429,7 +1429,8 @@ VIEWS.tank = () => {
   if (!t) return emptyState("tank", "Tank not found", "It may have been deleted.", `<a class="btn" href="#tanks">Back to tanks</a>`);
   const c = curCycle(t.id), sd = safeDate(t.id), t0 = today(), f14 = addDays(t0, -13);
   const water = S.water.filter(w => w.tankId === t.id && w.date >= f14);
-  const quick = ["feed", "water", "medication", "mortality"].map(m => `<button class="btn sm w" data-act="add" data-mod="${m}" data-tank="${t.id}">${ic(M[m].icon)}${m === "medication" ? "Medication" : M[m].label}</button>`).join("");
+  const QL = { stocking: "Stocking", medication: "Medication" };
+  const quick = ["stocking", "feed", "water", "medication", "mortality", "harvest"].map(m => `<button class="btn sm w" data-act="add" data-mod="${m}" data-tank="${t.id}">${ic(M[m].icon)}${QL[m] || M[m].label}</button>`).join("");
   const cyc = cycles(t.id).filter(x => x.closed);
   return `<div><a class="btn ghost sm" href="#tanks">${ic("left")}All tanks</a></div>` +
     phead(`<span style="display:inline-flex;align-items:center;gap:8px">${spIcon(t.species, "sm")}<span class="tcode">${esc(t.code)}</span> · ${esc(t.status || "")}</span>`, esc(t.name), `${esc(t.location || "")}${t.capacity ? ` · ${nfx(t.capacity)} ${esc(t.capUnit || "")}` : ""}${t.remarks ? " · " + esc(t.remarks) : ""}`,
