@@ -80,3 +80,15 @@ There is no build step. To run it locally, serve the folder with any static serv
 - Exported PDFs show the rupee symbol as "Rs" because the built-in PDF font has no ₹ glyph. Excel and CSV exports keep plain numbers.
 - Water ranges, farm name, currency symbol and staff names are set in **Settings**.
 - Download a full backup (JSON or Excel) from **Settings → Data** at the end of each season.
+
+## AquaLedger Farms (multi-farm, for clients)
+
+A second site at **/farms/** (https://rahulvarmavuyyuri.github.io/AquaLedger/farms/) lets you run AquaLedger for many client farms from one place. It uses its **own Firebase project**, so it never touches your own farm's data above.
+
+- **Provider** (rahulvarmavuyyuri@gmail.com): opens **All farms**, creates a farm with its owner's Google email and plan, pauses or resumes farms, and can open any farm for support.
+- **Farm owner**: sees only their farm and adds their own staff in Settings → Team access.
+- **Staff / viewers**: see only the farm(s) they were added to.
+- **Paused farm**: its team keeps read-only access until resumed.
+
+Files: `farms/index.html`, `farms/firebase-config.js` (new project keys + provider emails), `farms/firestore.rules` (publish these in the new project), `farms/sw.js`, `farms/manifest.webmanifest`.
+The **Farms security test** workflow checks the rules in Google's Firestore emulator whenever they change.

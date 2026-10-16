@@ -1,0 +1,69 @@
+rules_version = '2';
+
+// AquaLedger multi-farm access rules.
+// Every farm's data lives under /farms/{farmId}. A person can only read or change a farm
+// they are a member of (/farms/{farmId}/members/{email}). The provider emails below can
+// create farms, pause them, and support any farm.
+// To publish: Firebase console → Firestore Database → Rules → paste this file → Publish.
+//
+// Roles inside a farm: owner (set by the provider), admin, staff (add and edit records), viewer (read only).
+// A paused farm is read-only for its team.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null && request.auth.token.email != null
+        && request.auth.token.email_verified == true;
+    }
+    function me() { return request.auth.token.email.lower(); }
+    function isProvider() { return signedIn() && me() in ['rahulvarmavuyyuri@gmail.com']; }
+
+    function memberPath(f) { return /databases/$(database)/documents/farms/$(f)/members/$(me()); }
+    function role(f) { return signedIn() && exists(memberPath(f)) ? get(memberPath(f)).data.role : ''; }
+    function isMember(f) { return role(f) in ['owner', 'admin', 'staff', 'viewer']; }
+    function isFarmAdmin(f) { return role(f) in ['owner', 'admin']; }
+    function active(f) { return get(/databases/$(database)/documents/farms/$(f)).data.status != 'paused'; }
+
+    // Farm profile: name, owner, plan, status.
+    match /farms/{f} {
+      allow read: if isProvider() || isMember(f);
+      allow create, delete: if isProvider();
+      allow update: if isProvider();
+    }
+
+    // Team list for a farm.
+    match /farms/{f}/members/{email} {
+      allow read: if isProvider() || isFarmAdmin(f) || (signedIn() && email == me());
+      allow create, update: if isProvider()
+        || (isFarmAdmin(f) && active(f)
+            && request.resource.data.role in ['admin', 'staff', 'viewer']
+            && !(exists(/databases/$(database)/documents/farms/$(f)/members/$(email))
+                 && get(/databases/$(database)/documents/farms/$(f)/members/$(email)).data.role == 'owner'));
+      allow delete: if isProvider()
+        || (isFarmAdmin(f) && active(f) && email != me()
+            && get(/databases/$(database)/documents/farms/$(f)/members/$(email)).data.role != 'owner');
+    }
+
+    // Farm settings (name, currency, water ranges, staff names).
+    match /farms/{f}/config/{doc} {
+      allow read: if isProvider() || isMember(f);
+      allow write: if isProvider() || (isFarmAdmin(f) && active(f));
+    }
+
+    // Farm records.
+    match /farms/{f}/{col}/{id} {
+      allow read: if (isProvider() || isMember(f))
+        && col in ['tanks', 'stocking', 'medication', 'feed', 'water', 'mortality', 'harvest', 'items', 'purchases', 'expenses'];
+      allow write: if col in ['tanks', 'stocking', 'medication', 'feed', 'water', 'mortality', 'harvest', 'items', 'purchases', 'expenses']
+        && (isProvider() || (role(f) in ['owner', 'admin', 'staff'] && active(f)))
+        && (request.resource == null || request.resource.data.size() <= 40);
+    }
+
+    // Which farms each person belongs to (lets the app list a person's farms).
+    match /memberships/{email}/farms/{f} {
+      allow read: if isProvider() || (signedIn() && email == me()) || isFarmAdmin(f);
+      allow write: if isProvider() || (isFarmAdmin(f) && active(f));
+    }
+  }
+}

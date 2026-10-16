@@ -25,7 +25,8 @@ jobs:
       - name: Collect site files
         run: |
           mkdir -p _site
-          cp -r index.html firebase-config.js manifest.webmanifest sw.js icons .nojekyll _site/
+          cp -r index.html firebase-config.js manifest.webmanifest sw.js icons farms .nojekyll _site/
+          rm -f _site/farms/firestore.rules
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
