@@ -1,0 +1,28 @@
+name: Fetch design photos
+
+# Runs only on the photo-assets branch. Downloads freely licensed photos from
+# Wikimedia Commons (with author and license credits) for the design preview.
+on:
+  push:
+    branches: [photo-assets]
+    paths: [tools/fetch_photos.py, .github/workflows/fetch-photos.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python tools/fetch_photos.py
+      - name: Commit photos
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898699+github-actions[bot]@users.noreply.github.com"
+          git add photos
+          git commit -m "Add freely licensed design photos from Wikimedia Commons" || echo "nothing new"
+          git push origin HEAD:photo-assets
