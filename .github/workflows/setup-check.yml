@@ -15,7 +15,43 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Check sites and Firebase
+      - name: Check farms site
+        if: always()
+        run: |
+          HOST="${GITHUB_REPOSITORY_OWNER,,}.github.io"
+          ROOT="https://${HOST}/${GITHUB_REPOSITORY#*/}/"
+          FAIL=0
+          ok(){ echo "::notice title=PASS · $SITE::$1"; }
+          bad(){ echo "::error title=TODO · $SITE::$1"; FAIL=1; }
+          check(){
+            SITE="$1"; DIR="$2"; URL="$3"; EMAILKEY="$4"
+            CFG="${DIR}firebase-config.js"; RULES="${DIR}firestore.rules"
+            KEY=$(grep -oP 'apiKey:\s*"\K[^"]+' "$CFG"); PROJECT=$(grep -oP 'projectId:\s*"\K[^"]+' "$CFG")
+            EMAILS=$(grep -oP "${EMAILKEY}:\s*\[\K[^\]]+" "$CFG" | grep -oP '[^"\s,]+@[^"\s,]+')
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+            [[ "$CODE" == 200 ]] && ok "Site is live at $URL" || bad "Site returned HTTP $CODE at $URL"
+            for O in $EMAILS; do grep -q "'$O'" "$RULES" && ok "$O is in the rules file" || bad "$O is in the config but missing from the rules file"; done
+            if [[ "$KEY" == YOUR_* || -z "$KEY" ]]; then bad "Firebase project not connected yet: ${CFG} still has placeholder keys"; return; fi
+            ok "Connected to Firebase project $PROJECT"
+            curl -s "${URL}firebase-config.js" | grep -q "$PROJECT" && ok "Live site uses project $PROJECT" || bad "Live site doesn't have the new config yet (wait a minute after pushing)"
+            AC=$(curl -s "https://identitytoolkit.googleapis.com/v1/projects?key=$KEY")
+            if echo "$AC" | grep -q '"authorizedDomains"'; then
+              echo "$AC" | grep -q "\"$HOST\"" && ok "$HOST is an authorized sign-in domain" || bad "Add $HOST in Firebase → Authentication → Settings → Authorized domains"
+            else bad "Authentication not set up: Firebase → Build → Authentication → Get started"; fi
+            GA=$(curl -s -H 'Content-Type: application/json' -d "{\"providerId\":\"google.com\",\"continueUri\":\"$URL\"}" "https://identitytoolkit.googleapis.com/v1/accounts:createAuthUri?key=$KEY")
+            echo "$GA" | grep -q '"authUri"' && ok "Google sign-in is enabled" || bad "Enable Google in Firebase → Authentication → Sign-in method"
+            FCODE=$(curl -s -o /dev/null -w "%{http_code}" "https://firestore.googleapis.com/v1/projects/$PROJECT/databases/(default)/documents/farms?key=$KEY&pageSize=1")
+            case "$FCODE" in
+              403) ok "Firestore exists and blocks anonymous reads" ;;
+              200) bad "Firestore is OPEN to anyone (test mode): publish ${RULES} now" ;;
+              404) bad "Firestore database not created: Firebase → Build → Firestore Database → Create database" ;;
+              *)   bad "Firestore check returned HTTP $FCODE" ;;
+            esac
+          }
+          check "Farms site" "farms/" "${ROOT}farms/" "providerEmails"
+          exit $FAIL
+      - name: Check main site
+        if: always()
         run: |
           HOST="${GITHUB_REPOSITORY_OWNER,,}.github.io"
           ROOT="https://${HOST}/${GITHUB_REPOSITORY#*/}/"
@@ -48,5 +84,4 @@ jobs:
             esac
           }
           check "Main site" "" "$ROOT" "ownerEmails"
-          check "Farms site" "farms/" "${ROOT}farms/" "providerEmails"
           exit $FAIL
