@@ -68,6 +68,17 @@ await no("Paused farm owner cannot add staff", setDoc(doc(as("owner@b.test"), "f
 await ok("A person reads their own farm list", getDocs(collection(as("owner@a.test"), "memberships/owner@a.test/farms")));
 await no("A person cannot read someone else's farm list", getDocs(collection(as("staff@a.test"), "memberships/owner@a.test/farms")));
 
+// Activity stats and provider settings
+await ok("Staff updates the farm's activity count", setDoc(doc(as("staff@a.test"), "farms/A/stats/activity"), { days: { "2026-10-18": 3 }, lastEntry: "2026-10-18" }, { merge: true }));
+await ok("Owner updates the farm summary", setDoc(doc(as("owner@a.test"), "farms/A/stats/activity"), { ponds: 4, live: 120000, team: 3 }, { merge: true }));
+await no("Viewer cannot update activity", setDoc(doc(as("viewer@a.test"), "farms/A/stats/activity"), { lastEntry: "2026-10-18" }, { merge: true }));
+await no("Activity doc rejects other fields", setDoc(doc(as("staff@a.test"), "farms/A/stats/activity"), { secret: 1 }, { merge: true }));
+await no("Farm A owner cannot read Farm B activity", getDoc(doc(as("owner@a.test"), "farms/B/stats/activity")));
+await no("Paused farm cannot update activity", setDoc(doc(as("owner@b.test"), "farms/B/stats/activity"), { lastEntry: "2026-10-18" }, { merge: true }));
+await ok("Provider reads a farm's activity", getDoc(doc(as(PROVIDER), "farms/A/stats/activity")));
+await ok("Provider saves prices and UPI", setDoc(doc(as(PROVIDER), "provider/settings"), { monthly: 1500, yearly: 15000, upi: "x@upi" }));
+await no("Farm owner cannot read provider settings", getDoc(doc(as("owner@a.test"), "provider/settings")));
+
 // Provider
 await ok("Provider creates a farm", setDoc(doc(as(PROVIDER), "farms/C"), { name: "Farm C", status: "active", owner: "o@c.test" }));
 await ok("Provider makes the owner", setDoc(doc(as(PROVIDER), "farms/C/members/o@c.test"), { role: "owner" }));

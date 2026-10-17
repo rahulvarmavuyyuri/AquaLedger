@@ -60,6 +60,19 @@ service cloud.firestore {
         && (request.resource == null || request.resource.data.size() <= 40);
     }
 
+    // Activity summary per farm (records per day, last record, ponds, live stock, team size).
+    // The farm's own app updates it; the provider reads it on the All farms page.
+    match /farms/{f}/stats/{doc} {
+      allow read: if isProvider() || isMember(f);
+      allow write: if (isProvider() || (role(f) in ['owner', 'admin', 'staff'] && active(f)))
+        && request.resource.data.keys().hasOnly(['days', 'lastEntry', 'ponds', 'live', 'team', 'at']);
+    }
+
+    // Provider's own settings: plan prices and UPI ID.
+    match /provider/{doc} {
+      allow read, write: if isProvider();
+    }
+
     // Which farms each person belongs to (lets the app list a person's farms).
     match /memberships/{email}/farms/{f} {
       allow read: if isProvider() || (signedIn() && email == me()) || isFarmAdmin(f);

@@ -528,6 +528,61 @@ body.gate .app{grid-template-columns:minmax(0,1fr)}
   *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
   .anim .ln{stroke-dashoffset:0}
 }
+
+.adm-row{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px}
+.fu{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.fu li{display:flex;align-items:center;gap:12px;padding:12px 12px 12px 14px;border-radius:12px;background:rgba(3,17,27,.45);border:1px solid var(--line-soft);border-left:3px solid var(--warn)}
+.fu li.crit{border-left-color:var(--crit)}.fu li.info{border-left-color:var(--info)}
+.fu b{display:block;font-weight:650;font-size:14px}.fu span{font-size:12.5px;color:var(--muted)}
+.fu .grow{min-width:0;flex:1}
+svg.inc{width:100%;height:auto;display:block}
+.inc text{fill:var(--muted);font:500 11px var(--font-body,inherit)}.inc .vl{fill:var(--fg);font-weight:650}
+.inc .g{stroke:var(--line-soft)}.inc .b{fill:var(--accent);opacity:.55}.inc .b.now{opacity:1}
+.recent{display:flex;flex-direction:column;margin-top:8px;border-top:1px solid var(--line-soft)}
+.recent div{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:baseline;padding:9px 2px;border-bottom:1px solid var(--line-soft);font-size:13.5px}
+.recent .sub{font-size:12px;color:var(--muted)}
+.srch{position:relative;display:block;width:min(280px,100%)}
+.srch .i{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--muted)}
+.srch .in{padding-left:36px;height:38px}
+.fcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.fcard{min-width:0;display:flex;flex-direction:column;gap:12px;padding:16px;border-radius:16px;background:rgba(3,17,27,.5);border:1px solid var(--line-soft);transition:border-color .2s}
+.fcard:hover{border-color:var(--line)}
+.fcard.off{opacity:.72}
+.fcard header{display:flex;gap:10px;align-items:flex-start}
+.fcard h3{margin:0;font-size:16px;font-weight:700;line-height:1.25}
+.fcard .sub{color:var(--muted);font-size:12.5px}
+.fcard .grow{flex:1;min-width:0}
+.fcard .who{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);min-width:0}
+.fcard .who .grow{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fcard .who .i{width:15px;height:15px;flex:none}
+.fcard .who a{display:inline-flex;align-items:center;gap:5px;color:var(--accent);text-decoration:none;white-space:nowrap;font-weight:600}
+.use{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0;padding:10px 0;border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
+.use div{min-width:0}.use dt{font-size:11.5px;color:var(--muted)}.use dd{margin:2px 0 0;font-weight:650;font-size:13.5px}
+.use dd .sub{display:block;font-weight:500;font-size:11.5px}
+.use dd.ok{color:var(--ok)}.use dd.warn{color:var(--warn)}
+.spark{display:flex;align-items:flex-end;gap:3px;height:34px}
+.spark i{flex:1;max-width:10px;border-radius:2px 2px 0 0;background:var(--accent);opacity:.7}
+.spark i.z{background:var(--line);opacity:1}
+.spark .sub{margin-left:auto;align-self:center;white-space:nowrap;padding-left:8px}
+.fcard footer{display:flex;gap:6px;flex-wrap:wrap}
+.fcard footer .ghost{margin-left:auto}
+.sh-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin:6px 0 14px}
+.sh-h .eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.sh-h h2{margin:2px 0 0;font-size:22px}
+.form{display:flex;flex-direction:column;gap:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sh-f{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+.hist{margin-top:16px;border-top:1px solid var(--line-soft);padding-top:12px}
+.hist h3{font-size:13px;color:var(--muted);margin:0 0 6px;font-weight:600}
+.hist div{display:grid;grid-template-columns:auto 1fr auto;gap:12px;padding:6px 0;font-size:13.5px}
+.menu-list{display:flex;flex-direction:column;gap:6px}
+.menu-list button{display:flex;align-items:center;gap:10px;height:48px;padding:0 14px;border-radius:12px;border:1px solid var(--line-soft);background:rgba(3,17,27,.45);font-weight:600;text-align:left;color:var(--fg)}
+.menu-list button.danger{color:var(--crit)}
+.menu-list .i{width:18px;height:18px}
+.sheet{max-height:90vh;overflow:auto}
+@media (max-width:900px){.adm-row{grid-template-columns:1fr}.srch{width:100%}.fcards{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:420px){.grid2{grid-template-columns:1fr}.use{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
 </style>
 </head>
 <body>
@@ -1038,7 +1093,7 @@ function dbErr(e) {
 const store = {
   async add(col, data) {
     data = { ...data, at: new Date().toISOString(), by: S.uid || null, ...(S.uname ? { byName: S.uname } : {}) };
-    if (S.db) { const ref = S.db.collection(col).doc(); const p = ref.set(data); if (S.fb) { p.catch(e => toast(dbErr(e), true)); return ref.id; } await p; return ref.id; }
+    if (S.db) { const ref = S.db.collection(col).doc(); const p = ref.set(data); if (S.fb) { p.catch(e => toast(dbErr(e), true)); bumpActivity(); return ref.id; } await p; return ref.id; }
     const id = uid(); S[col].push({ id, ...data }); render(); return id;
   },
   async set(col, id, data) {
@@ -2057,7 +2112,7 @@ async function bootFirebase(cfg) {
   S.fb = true;
   const sellers = (cfg.providerEmails || []).map(x => String(x).trim().toLowerCase());
   firebase.auth().onAuthStateChanged(u => {
-    rootUnsubs.forEach(f => { try { f(); } catch (e) {} }); rootUnsubs = []; unsubAll(); resetFarmState();
+    rootUnsubs.forEach(f => { try { f(); } catch (e) {} }); rootUnsubs = []; stopStatSubs(); unsubAll(); resetFarmState();
     S.farms = []; S.allFarms = []; S.farmId = null; S.role = null;
     if (!u) { S.authUser = null; S.uid = null; S.uname = null; S.isSeller = false; S.mode = "auth"; render(); return; }
     S.authUser = u; S.uid = (u.email || "").toLowerCase(); S.uname = u.displayName || S.uid; S.isSeller = sellers.includes(S.uid);
@@ -2069,7 +2124,8 @@ async function bootFirebase(cfg) {
       if (S.farmId) { const m = S.farms.find(f => f.id === S.farmId), r = m ? m.role : null; if (r !== S.role && !(S.isSeller && !r)) return openFarm(S.farmId); }
       ready(); renderNav();
     }, () => { gotMine = true; ready(); }));
-    if (S.isSeller) rootUnsubs.push(FDB.collection("farms").onSnapshot(snap => { S.farmsErr = null; S.allFarms = snap.docs.map(d => ({ id: d.id, ...d.data() })); gotAll = true; ready(); render(); }, err => { S.farmsErr = (err && err.code) || "unknown"; gotAll = true; ready(); render(); }));
+    if (S.isSeller) rootUnsubs.push(FDB.doc("provider/settings").onSnapshot(s => { S.provSettings = s.exists ? s.data() : {}; applyProvSettings(); if (!S.farmId) render(); }, () => {}));
+    if (S.isSeller) rootUnsubs.push(FDB.collection("farms").onSnapshot(snap => { S.farmsErr = null; S.allFarms = snap.docs.map(d => ({ id: d.id, ...d.data() })); syncStatSubs(); gotAll = true; ready(); render(); }, err => { S.farmsErr = (err && err.code) || "unknown"; gotAll = true; ready(); render(); }));
   });
 }
 function farmChoices() {
@@ -2102,7 +2158,7 @@ function openFarm(fid) {
 function applyWrite() { const paused = !!(S.farm && S.farm.status === "paused"); S.paused = paused; S.canWrite = S.isSeller || (!!S.role && S.role !== "viewer" && !paused); }
 function subscribeFarm(fid) {
   const need = new Set(COLS.concat(["settings", "farm"]));
-  const done = k => { if (need.delete(k) && !need.size) { S.mode = "db"; S.lastKey = ""; } render(); };
+  const done = k => { if (need.delete(k) && !need.size) { S.mode = "db"; S.lastKey = ""; } render(); syncSummary(); };
   const fail = k => err => {
     if (err && err.code === "permission-denied") { toast("You no longer have access to that farm.", true); unsubAll(); resetFarmState(); S.farmId = null; pickFarm(); return; }
     toast(dbErr(err), true); done(k);
@@ -2153,11 +2209,8 @@ function setRole(email, role) { memberWrite(email, role).then(() => toast(`${ema
 
 /* ----- provider admin ----- */
 const PLANS = ["Trial", "Monthly", "Yearly"];
-VIEWS.admin = () => {
-  if (!S.isSeller) return emptyState("grid", "Provider page", "Only the AquaLedger provider account can manage farms.");
-  const farms = [...S.allFarms].sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
-  const paused = farms.filter(f => f.status === "paused").length;
-  const diag = S.farmsErr ? `<section class="panel diag"><div class="ph"><div><h2>${ic("alert")} The database is refusing your provider account</h2><p>Signed in as <b>${esc(S.uid)}</b>. Firebase answered: <span class="mono">${esc(S.farmsErr)}</span></p></div></div>
+function farmsDiag() {
+  return S.farmsErr ? `<section class="panel diag"><div class="ph"><div><h2>${ic("alert")} The database is refusing your provider account</h2><p>Signed in as <b>${esc(S.uid)}</b>. Firebase answered: <span class="mono">${esc(S.farmsErr)}</span></p></div></div>
       ${S.farmsErr === "permission-denied" ? `<ol class="diag-steps">
         <li><b>Missing step: the farms security rules are not published in the <span class="mono">aqualedger-farms</span> project.</b> A new database blocks everyone until they are.</li>
         <li>Open <span class="mono">raw.githubusercontent.com/rahulvarmavuyyuri/AquaLedger/main/farms/firestore.rules</span> → Select all → Copy.</li>
@@ -2167,37 +2220,265 @@ VIEWS.admin = () => {
       : S.farmsErr === "unavailable" ? `<p>No connection to the database right now. Check your internet and reload.</p>`
       : S.farmsErr === "failed-precondition" || S.farmsErr === "not-found" ? `<p><b>Missing step: the Firestore database is not created</b> in <span class="mono">aqualedger-farms</span>. Firebase console → Build → Firestore Database → Create database (Production mode).</p>`
       : `<p>Send this message to your developer.</p>`}</section>` : "";
-  return diag + phead("Provider", "All farms", "Create a private space for each client farm and add its owner. The owner then adds their own staff. Pause a farm when its subscription lapses: its team keeps read-only access until you resume it.", "") +
-    `<div class="kpis"><div class="kpi"><div class="k">Farms</div><div class="v">${farms.length}</div><div class="s">client spaces</div></div>
-      <div class="kpi pos"><div class="k">Active</div><div class="v">${farms.length - paused}</div><div class="s">can add records</div></div>
-      <div class="kpi ${paused ? "neg" : ""}"><div class="k">Paused</div><div class="v">${paused}</div><div class="s">read-only</div></div></div>
-    <form class="panel" id="farmform" novalidate style="display:flex;flex-direction:column;gap:14px"><div class="ph" style="margin:0"><div><h2>New farm</h2><p>The owner signs in with this Google email and sees only this farm.</p></div></div>
-      <div class="filters"><div class="fld q"><label for="nf_name">Farm name <span class="req">*</span></label><input class="in" id="nf_name" placeholder="Godavari Shrimp Farms" autocomplete="off"></div>
-      <div class="fld"><label for="nf_loc">Location</label><input class="in" id="nf_loc" placeholder="Bhimavaram" autocomplete="off"></div>
-      <div class="fld q"><label for="nf_owner">Owner's Google email <span class="req">*</span></label><input class="in" id="nf_owner" type="email" placeholder="owner@gmail.com" autocomplete="off"></div>
-      <div class="fld"><label for="nf_plan">Plan</label><select class="in" id="nf_plan">${PLANS.map(p => `<option>${p}</option>`).join("")}</select></div>
-      <div class="fld" style="justify-content:flex-end"><button class="btn pri" type="submit">${ic("plus")}Create farm</button></div></div></form>
-    <section class="panel"><div class="ph"><div><h2>Client farms</h2><p>Open a farm to view or support it. Your own access shows as Provider.</p></div></div>
-    ${farms.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Farm</th><th>Owner</th><th>Plan</th><th>Status</th><th>Created</th><th class="r">Actions</th></tr></thead><tbody>${farms.map(f => `<tr>
-      <td data-l="Farm" class="wide"><b>${esc(f.name || "Farm")}</b> <span class="sub">${esc(f.location || "")}</span></td>
-      <td data-l="Owner" class="wide"><span class="sub">${esc(f.owner || "—")}</span></td>
-      <td data-l="Plan"><select class="in" style="height:34px;max-width:130px" id="plan_${f.id}" data-farm-plan="${f.id}" aria-label="Plan for ${esc(f.name || "farm")}">${PLANS.map(p => `<option ${f.plan === p ? "selected" : ""}>${p}</option>`).join("")}</select></td>
-      <td data-l="Status"><span class="chip ${f.status === "paused" ? "warn" : "ok"}"><span class="dot"></span>${f.status === "paused" ? "Paused" : "Active"}</span></td>
-      <td data-l="Created"><span class="tn">${fdate((f.createdAt || "").slice(0, 10), 1)}</span></td>
-      <td data-l="Actions" class="r"><div style="display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap"><button class="btn sm" data-act="farm-open" data-id="${f.id}">Open</button><button class="btn sm ${f.status === "paused" ? "" : "danger"}" data-act="farm-pause" data-id="${f.id}" data-to="${f.status === "paused" ? "active" : "paused"}">${f.status === "paused" ? "Resume" : "Pause"}</button></div></td></tr>`).join("")}</tbody></table></div>`
-      : emptyState("grid", "No client farms yet", "Create the first farm above. Its owner can sign in straight away.")}</section>`;
+}
+/* ===== All farms v2 (provider): billing, follow-ups, usage, search ===== */
+const PLAN_INFO = { Trial: { price: 0, months: 0 }, Monthly: { price: 1500, months: 1 }, Yearly: { price: 15000, months: 12 } };
+const PAY_METHODS = ["UPI", "Bank transfer", "Cash"];
+(function addIcons() {
+  const sp = document.querySelector("svg defs") || document.querySelector("svg");
+  if (!sp || document.getElementById("i-phone")) return;
+  sp.insertAdjacentHTML("beforeend", `<symbol id="i-phone" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M5 4h3.5l1.6 4.2-2.2 1.4a11 11 0 0 0 6.5 6.5l1.4-2.2L20 15.5V19a1.5 1.5 0 0 1-1.6 1.5A16.5 16.5 0 0 1 3.5 5.6 1.5 1.5 0 0 1 5 4Z"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></g></symbol>
+  <symbol id="i-msg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M4 5h16v11H9l-5 4z"/></symbol>`);
+})();
+function billing(f) {
+  const t = today(), info = PLAN_INFO[f.plan] || PLAN_INFO.Monthly;
+  if (f.status === "paused") return { k: "paused", chip: "", label: "Paused", sort: 5 };
+  if (f.plan === "Trial") {
+    const end = f.trialEnds || addDays((f.createdAt || t).slice(0, 10), 14), left = dnum(end) - dnum(t);
+    return left < 0 ? { k: "overdue", chip: "crit", label: `Trial ended ${fdate(end)}`, days: left, sort: 0 } : { k: "trial", chip: left <= 3 ? "warn" : "info", label: `Trial · ${left} day${left === 1 ? "" : "s"} left`, days: left, sort: left <= 3 ? 2 : 4 };
+  }
+  if (!f.paidUntil) return { k: "overdue", chip: "crit", label: "No payment yet", days: -1, sort: 0 };
+  const left = dnum(f.paidUntil) - dnum(t);
+  if (left < 0) return { k: "overdue", chip: "crit", label: `Overdue ${-left} day${left === -1 ? "" : "s"}`, days: left, sort: 0, price: f.price ?? info.price };
+  if (left <= 7) return { k: "due", chip: "warn", label: left === 0 ? "Due today" : `Due in ${left} day${left === 1 ? "" : "s"}`, days: left, sort: 1, price: f.price ?? info.price };
+  return { k: "paid", chip: "ok", label: `Paid till ${fdate(f.paidUntil)}`, days: left, sort: 3 };
+}
+function farmUse(f) { return (S.farmStats || {})[f.id] || {}; }
+function statsFromDoc(d) {
+  const days = (d && d.days) || {}, t = today(), daily = [];
+  for (let i = 13; i >= 0; i--) daily.push(Number(days[addDays(t, -i)]) || 0);
+  return { ponds: d && d.ponds, live: d && d.live, team: d && d.team, lastEntry: d && d.lastEntry, daily };
+}
+function applyProvSettings() {
+  const p = S.provSettings || {};
+  PLAN_INFO.Monthly.price = Number(p.monthly) || 1500; PLAN_INFO.Yearly.price = Number(p.yearly) || 15000;
+}
+let statSubs = new Map();
+function syncStatSubs() {
+  const ids = new Set(S.allFarms.map(f => f.id));
+  statSubs.forEach((u, id) => { if (!ids.has(id)) { try { u(); } catch (e) {} statSubs.delete(id); } });
+  ids.forEach(id => { if (statSubs.has(id)) return;
+    statSubs.set(id, FDB.doc(`farms/${id}/stats/activity`).onSnapshot(s => { S.farmStats = S.farmStats || {}; S.farmStats[id] = statsFromDoc(s.exists ? s.data() : null); if (!S.farmId) render(); }, () => {})); });
+}
+function stopStatSubs() { statSubs.forEach(u => { try { u(); } catch (e) {} }); statSubs = new Map(); S.farmStats = {}; }
+/* Each farm keeps a small activity doc: entries per day, last entry date, ponds, live stock, team size. */
+function bumpActivity() {
+  if (!S.fb || !S.farmId || !S.canWrite) return;
+  const d = today();
+  FDB.doc(`farms/${S.farmId}/stats/activity`).set({ days: { [d]: firebase.firestore.FieldValue.increment(1) }, lastEntry: d, at: new Date().toISOString() }, { merge: true }).catch(() => {});
+}
+let sumTimer = null, lastSum = "";
+function syncSummary() {
+  if (!S.fb || !S.farmId || S.mode !== "db" || !S.canWrite) return;
+  clearTimeout(sumTimer); sumTimer = setTimeout(() => {
+    if (!S.farmId || S.mode !== "db") return;
+    const act = S.tanks.filter(t => t.status !== "Inactive"), live = Math.round(sum(act, t => curCycle(t.id).current));
+    const o = { ponds: act.length, live }; if (S.isAdmin && S.access.length) o.team = S.access.length;
+    const key = S.farmId + JSON.stringify(o); if (key === lastSum) return; lastSum = key;
+    FDB.doc(`farms/${S.farmId}/stats/activity`).set({ ...o, at: new Date().toISOString() }, { merge: true }).catch(() => {});
+  }, 4000);
+}
+function lastSeen(d) {
+  if (!d) return { t: "No entries yet", c: "warn" };
+  const n = dnum(today()) - dnum(d);
+  return n <= 0 ? { t: "Today", c: "ok" } : n === 1 ? { t: "Yesterday", c: "ok" } : { t: `${n} days ago`, c: n >= 5 ? "warn" : "" };
+}
+const monthlyValue = f => { const i = PLAN_INFO[f.plan]; if (!i || !i.months || f.status === "paused") return 0; return (f.price ?? i.price) / i.months; };
+function farmPayments() { const out = []; S.allFarms.forEach(f => (f.payments || []).forEach(p => out.push({ ...p, farm: f.name, fid: f.id }))); return out.sort((a, b) => b.date.localeCompare(a.date)); }
+
+function followUps(farms) {
+  const out = [];
+  farms.forEach(f => {
+    const b = billing(f), u = farmUse(f), ls = lastSeen(u.lastEntry);
+    if (b.k === "overdue") out.push({ sev: "crit", f, title: `${f.name}: ${b.label.toLowerCase()}`, detail: b.price ? `${money(b.price)} ${f.plan.toLowerCase()} plan · pause if unpaid` : "Convert to a paid plan or pause", act: "pay" });
+    else if (b.k === "due") out.push({ sev: "warn", f, title: `${f.name}: renewal ${b.label.toLowerCase()}`, detail: `${money(b.price)} on ${fdate(f.paidUntil)} · send a reminder`, act: "remind" });
+    else if (b.k === "trial" && b.days <= 3) out.push({ sev: "warn", f, title: `${f.name}: trial ends in ${b.days} day${b.days === 1 ? "" : "s"}`, detail: "Call the owner and offer a plan", act: "call" });
+    if (f.status !== "paused" && ls.c === "warn") out.push({ sev: "info", f, title: `${f.name}: quiet for ${u.lastEntry ? ls.t : "a while"}`, detail: "No records logged. Check if staff need help", act: "call" });
+  });
+  return out.sort((a, b) => ({ crit: 0, warn: 1, info: 2 })[a.sev] - ({ crit: 0, warn: 1, info: 2 })[b.sev]);
+}
+function incomeChart() {
+  const t = today(), months = []; for (let i = 5; i >= 0; i--) { const d = new Date(+t.slice(0, 4), +t.slice(5, 7) - 1 - i, 1); months.push(`${d.getFullYear()}-${pad(d.getMonth() + 1)}`); }
+  const pays = farmPayments(), vals = months.map(m => sum(pays.filter(p => p.date.startsWith(m)), "amount"));
+  const W = 520, H = 190, L = 44, R = 8, T = 12, B = 26, mx = Math.max(10000, ...vals), step = mx > 40000 ? 20000 : 10000, top = Math.ceil(mx / step) * step;
+  const y = v => T + (H - T - B) * (1 - v / top), cw = (W - L - R) / months.length;
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="inc" role="img" aria-label="Payments collected per month">`;
+  for (let v = 0; v <= top; v += step) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" class="g"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${v ? "₹" + v / 1000 + "k" : "0"}</text>`;
+  vals.forEach((v, i) => { const x = L + i * cw + cw * .22, w = cw * .56; s += `<rect x="${x}" y="${y(v)}" width="${w}" height="${Math.max(0, y(0) - y(v))}" rx="5" class="b${i === 5 ? " now" : ""}"><title>${MON[+months[i].slice(5) - 1]}: ${money(v)}</title></rect>${v ? `<text x="${x + w / 2}" y="${y(v) - 6}" text-anchor="middle" class="vl">${v >= 1000 ? "₹" + nfx(v / 1000, 1) + "k" : money(v)}</text>` : ""}<text x="${x + w / 2}" y="${H - 7}" text-anchor="middle">${MON[+months[i].slice(5) - 1]}</text>`; });
+  return s + `</svg>`;
+}
+
+VIEWS.admin = () => {
+  if (!S.isSeller) return emptyState("grid", "Provider page", "Only the AquaLedger provider account can manage farms.");
+  const all = [...S.allFarms], t = today();
+  const B = new Map(all.map(f => [f.id, billing(f)]));
+  const active = all.filter(f => f.status !== "paused");
+  const mrr = sum(active, monthlyValue);
+  const pays = farmPayments(), thisMonth = sum(pays.filter(p => p.date.startsWith(t.slice(0, 7))), "amount");
+  const due7 = all.filter(f => B.get(f.id).k === "due"), overdue = all.filter(f => B.get(f.id).k === "overdue");
+  const ponds = sum(active, f => farmUse(f).ponds), live = sum(active, f => farmUse(f).live), lc = compact(live);
+  const tab = S.farmTab || "all", q = norm(S.farmQ);
+  const TABS = [["all", "All", all.length], ["attention", "Needs action", overdue.length + due7.length], ["trial", "Trial", all.filter(f => B.get(f.id).k === "trial").length], ["paused", "Paused", all.filter(f => f.status === "paused").length]];
+  const shown = all.filter(f => {
+    const k = B.get(f.id).k;
+    if (tab === "attention" && !(k === "overdue" || k === "due")) return false;
+    if (tab === "trial" && k !== "trial") return false;
+    if (tab === "paused" && f.status !== "paused") return false;
+    return !q || norm([f.name, f.location, f.owner, f.phone].join(" ")).includes(q);
+  }).sort((a, b) => B.get(a.id).sort - B.get(b.id).sort || (a.name || "").localeCompare(b.name || ""));
+  const fu = followUps(all);
+
+  return farmsDiag() + phead("Provider", "All farms", "Your client farms, their payments and how actively they use AquaLedger.", `<button class="btn" data-act="prov-set">${ic("gear")}Prices &amp; UPI</button><button class="btn pri" data-act="farm-new">${ic("plus")}New farm</button>`) +
+    `<div class="kpis">
+      <div class="kpi"><div class="k">Client farms</div><div class="v">${all.length}</div><div class="s">${active.length} active · ${all.length - active.length} paused</div></div>
+      <div class="kpi pos"><div class="k">Monthly income</div><div class="v">${money(Math.round(mrr))}</div><div class="s">from active paid plans</div></div>
+      <div class="kpi"><div class="k">Collected in ${MON[+t.slice(5, 7) - 1]}</div><div class="v">${money(thisMonth)}</div><div class="s">${pays.filter(p => p.date.startsWith(t.slice(0, 7))).length} payments</div></div>
+      <div class="kpi ${overdue.length ? "neg" : ""}"><div class="k">To collect</div><div class="v">${money(sum(overdue.concat(due7), f => B.get(f.id).price || 0))}</div><div class="s">${overdue.length} overdue · ${due7.length} due this week</div></div>
+      <div class="kpi"><div class="k">Ponds managed</div><div class="v">${ponds}</div><div class="s">${lc.n} ${lc.u || ""} live stock</div></div>
+    </div>
+    <div class="adm-row">
+      <section class="panel"><div class="ph"><div><h2>Follow up today</h2><p>Payments, trials ending and farms that stopped logging</p></div><span class="chip ${fu.some(x => x.sev === "crit") ? "crit" : fu.length ? "warn" : "ok"}"><span class="dot"></span>${fu.length || "All clear"}</span></div>
+        ${fu.length ? `<ul class="fu">${fu.slice(0, 6).map(x => `<li class="${x.sev}"><div class="grow"><b>${esc(x.title)}</b><span>${esc(x.detail)}</span></div>
+          ${x.act === "pay" ? `<button class="btn sm" data-act="farm-pay" data-id="${x.f.id}">${ic("coin")}Record payment</button>` : x.act === "remind" ? `<button class="btn sm" data-act="farm-remind" data-id="${x.f.id}">${ic("msg")}Reminder</button>` : `<button class="btn sm" data-act="farm-call" data-id="${x.f.id}">${ic("phone")}Call</button>`}</li>`).join("")}</ul>`
+        : emptyState("check", "Nothing to chase", "Every farm is paid up and logging records.")}</section>
+      <section class="panel"><div class="ph"><div><h2>Payments received</h2><p>Last 6 months, all farms</p></div></div>${incomeChart()}
+        <div class="recent">${pays.slice(0, 3).map(p => `<div><span>${esc(p.farm)}</span><span class="sub">${fdate(p.date)} · ${esc(p.method || "")}</span><b class="tn">${money(p.amount)}</b></div>`).join("")}</div></section>
+    </div>
+    <section class="panel"><div class="ph"><div><h2>Client farms</h2><p>Sorted with what needs action first. Open a farm to view or support it.</p></div>
+      <label class="srch">${ic("search")}<input class="in" id="farm_q" placeholder="Search farm, owner, phone" value="${esc(S.farmQ || "")}" autocomplete="off" aria-label="Search farms"></label></div>
+      <div class="tabs" role="tablist" style="align-self:flex-start;margin-bottom:12px">${TABS.map(([k, l, n]) => `<button role="tab" aria-selected="${tab === k}" class="${tab === k ? "on" : ""}" data-act="farm-tab" data-f="${k}">${l} <span class="tcount">${n}</span></button>`).join("")}</div>
+      ${shown.length ? `<div class="fcards">${shown.map(f => {
+        const b = B.get(f.id), u = farmUse(f), ls = lastSeen(u.lastEntry), info = PLAN_INFO[f.plan] || {};
+        return `<article class="fcard ${f.status === "paused" ? "off" : ""}">
+          <header><div class="grow"><h3>${esc(f.name)}</h3><span class="sub">${esc(f.location || "")}${f.location ? " · " : ""}since ${fdate((f.createdAt || "").slice(0, 10))}</span></div>
+            <span class="chip ${b.chip}"><span class="dot"></span>${b.label}</span></header>
+          <div class="who">${ic("grid")}<span class="grow">${esc(f.owner)}</span>${f.phone ? `<a class="tn" href="tel:${esc(f.phone)}">${ic("phone")}${esc(f.phone)}</a>` : ""}</div>
+          <dl class="use">
+            <div><dt>Plan</dt><dd>${esc(f.plan)}${info.months ? ` <span class="sub">${money(f.price ?? info.price)}/${info.months === 12 ? "yr" : "mo"}</span>` : ""}</dd></div>
+            <div><dt>Ponds</dt><dd class="tn">${u.ponds ?? "—"}</dd></div>
+            <div><dt>Team</dt><dd class="tn">${u.team ?? 1}</dd></div>
+            <div><dt>Last record</dt><dd class="${ls.c}">${ls.t}</dd></div>
+          </dl>
+          <div class="spark" title="Records logged per day, last 14 days">${(u.daily || Array(14).fill(0)).map(v => `<i style="height:${Math.max(6, Math.min(100, v * 6))}%" class="${v ? "" : "z"}"></i>`).join("")}<span class="sub">${sum(u.daily || [], x => x)} records in 14 days</span></div>
+          <footer><button class="btn sm" data-act="farm-open" data-id="${f.id}">Open farm</button>
+            <button class="btn sm" data-act="farm-pay" data-id="${f.id}">${ic("coin")}Payment</button>
+            <button class="btn sm ghost" data-act="farm-more" data-id="${f.id}" aria-label="More for ${esc(f.name)}">${ic("more")}</button></footer>
+        </article>`; }).join("")}</div>`
+      : emptyState("grid", all.length ? "No farms match" : "No client farms yet", all.length ? "Try another search or tab." : "Tap New farm to add your first client.")}</section>`;
 };
+
+function farmById(id) { return S.allFarms.find(f => f.id === id); }
+function newFarmSheet() {
+  openSheet(`<div class="sh-h"><div><span class="eyebrow">New client</span><h2>New farm</h2></div><button class="btn ghost sm" data-act="close">${ic("x")}</button></div>
+  <form id="farmform" class="form" novalidate>
+    <div class="fld"><label for="nf_name">Farm name <span class="req">*</span></label><input class="in" id="nf_name" placeholder="Godavari Shrimp Farms" autocomplete="off"></div>
+    <div class="grid2"><div class="fld"><label for="nf_loc">Location</label><input class="in" id="nf_loc" placeholder="Bhimavaram" autocomplete="off"></div>
+    <div class="fld"><label for="nf_phone">Owner's phone</label><input class="in" id="nf_phone" type="tel" placeholder="98480 12345" autocomplete="off"></div></div>
+    <div class="fld"><label for="nf_owner">Owner's Google email <span class="req">*</span></label><input class="in" id="nf_owner" type="email" placeholder="owner@gmail.com" autocomplete="off"></div>
+    <div class="grid2"><div class="fld"><label for="nf_plan">Plan</label><select class="in" id="nf_plan">${PLANS.map(p => `<option ${p === "Trial" ? "selected" : ""}>${p}</option>`).join("")}</select></div>
+    <div class="fld"><label for="nf_price">Price</label><input class="in" id="nf_price" inputmode="numeric" placeholder="14-day free trial" disabled></div></div>
+    <p class="sub">The owner signs in with this Google email and sees only their farm. They add their own staff.</p>
+    <div class="sh-f"><button type="button" class="btn ghost" data-act="close">Cancel</button><button class="btn pri" type="submit">${ic("plus")}Create farm</button></div>
+  </form>`);
+}
+function paySheet(f) {
+  const info = PLAN_INFO[f.plan] || PLAN_INFO.Monthly, plan = f.plan === "Trial" ? "Monthly" : f.plan, pi = PLAN_INFO[plan];
+  const from = f.paidUntil && f.paidUntil >= today() ? f.paidUntil : today();
+  openSheet(`<div class="sh-h"><div><span class="eyebrow">${esc(f.name)}</span><h2>Record payment</h2></div><button class="btn ghost sm" data-act="close">${ic("x")}</button></div>
+  <form id="payform" class="form" data-id="${f.id}" novalidate>
+    <div class="grid2"><div class="fld"><label for="pf_plan">Plan</label><select class="in" id="pf_plan">${["Monthly", "Yearly"].map(p => `<option ${p === plan ? "selected" : ""}>${p}</option>`).join("")}</select></div>
+    <div class="fld"><label for="pf_amt">Amount received <span class="req">*</span></label><input class="in" id="pf_amt" inputmode="numeric" value="${f.price ?? pi.price}"></div></div>
+    <div class="grid2"><div class="fld"><label for="pf_method">Paid by</label><select class="in" id="pf_method">${PAY_METHODS.map(m => `<option>${m}</option>`).join("")}</select></div>
+    <div class="fld"><label for="pf_date">Date</label><input class="in" id="pf_date" type="date" value="${today()}"></div></div>
+    <div class="fld"><label for="pf_ref">UPI or receipt reference</label><input class="in" id="pf_ref" placeholder="Optional" autocomplete="off"></div>
+    <div class="preview" id="pf_prev"><span>Access will run until <b>${fdate(addDays(from, pi.months * 30), 1)}</b>${f.status === "paused" ? " and the farm will be resumed" : ""}.</span></div>
+    <div class="sh-f"><button type="button" class="btn ghost" data-act="close">Cancel</button><button class="btn pri" type="submit">${ic("check")}Save payment</button></div>
+  </form>
+  ${(f.payments || []).length ? `<div class="hist"><h3>Earlier payments</h3>${f.payments.slice().reverse().slice(0, 4).map(p => `<div><span class="tn">${fdate(p.date, 1)}</span><span class="sub">${esc(p.method)}</span><b class="tn">${money(p.amount)}</b></div>`).join("")}</div>` : ""}`);
+}
+function reminderText(f) {
+  const b = billing(f), pi = PLAN_INFO[f.plan] || PLAN_INFO.Monthly;
+  return `Hello, this is a reminder from AquaLedger. ${f.name}'s ${f.plan.toLowerCase()} plan of ${money(f.price ?? pi.price)} is ${b.k === "overdue" ? "overdue since " + fdate(f.paidUntil) : "due on " + fdate(f.paidUntil)}. ${S.provSettings && S.provSettings.upi ? `You can pay by UPI to ${S.provSettings.upi}. ` : ""}Thank you.`;
+}
+function remindSheet(f) {
+  openSheet(`<div class="sh-h"><div><span class="eyebrow">${esc(f.name)}</span><h2>Payment reminder</h2></div><button class="btn ghost sm" data-act="close">${ic("x")}</button></div>
+  <div class="form"><textarea class="in" id="rm_text" rows="5" data-phone="${esc(f.phone || "")}">${esc(reminderText(f))}</textarea>
+  <p class="sub">For ${esc(f.phone || f.owner)}. Edit the message if you like, then send it.</p>
+  <div class="sh-f"><button class="btn" data-act="rm-copy">${ic("copy")}Copy</button>${f.phone ? `<a class="btn pri" id="rm_wa" target="_blank" rel="noopener" href="${waLink(f.phone, reminderText(f))}">${ic("msg")}Open WhatsApp</a>` : ""}</div></div>`);
+}
+function waLink(phone, text) { let n = String(phone).replace(/\D/g, ""); if (n.length === 10) n = "91" + n; return `https://wa.me/${n}?text=${encodeURIComponent(text)}`; }
+function provSheet() {
+  const p = S.provSettings || {};
+  openSheet(`<div class="sh-h"><div><span class="eyebrow">Provider</span><h2>Prices &amp; UPI</h2></div><button class="btn ghost sm" data-act="close">${ic("x")}</button></div>
+  <form id="provform" class="form" novalidate>
+    <div class="grid2"><div class="fld"><label for="pv_m">Monthly price (₹)</label><input class="in" id="pv_m" inputmode="numeric" value="${esc(p.monthly || PLAN_INFO.Monthly.price)}"></div>
+    <div class="fld"><label for="pv_y">Yearly price (₹)</label><input class="in" id="pv_y" inputmode="numeric" value="${esc(p.yearly || PLAN_INFO.Yearly.price)}"></div></div>
+    <div class="fld"><label for="pv_upi">Your UPI ID</label><input class="in" id="pv_upi" placeholder="yourname@okaxis" value="${esc(p.upi || "")}" autocomplete="off"></div>
+    <p class="sub">Used for new farms, payment amounts and reminder messages. A farm's own price, if set, stays as it is.</p>
+    <div class="sh-f"><button type="button" class="btn ghost" data-act="close">Cancel</button><button class="btn pri" type="submit">${ic("check")}Save</button></div>
+  </form>`);
+}
+function farmMore(f) {
+  openSheet(`<div class="sh-h"><div><span class="eyebrow">${esc(f.owner)}</span><h2>${esc(f.name)}</h2></div><button class="btn ghost sm" data-act="close">${ic("x")}</button></div>
+  <div class="menu-list">
+    <button data-act="farm-remind" data-id="${f.id}">${ic("msg")}Send payment reminder</button>
+    <button data-act="farm-call" data-id="${f.id}">${ic("phone")}Call owner${f.phone ? " · " + esc(f.phone) : ""}</button>
+    <button data-act="farm-pause" data-id="${f.id}" data-to="${f.status === "paused" ? "active" : "paused"}" class="${f.status === "paused" ? "" : "danger"}">${ic(f.status === "paused" ? "check" : "alert")}${f.status === "paused" ? "Resume farm" : "Pause farm (team becomes read-only)"}</button>
+  </div>`);
+}
+async function savePayment(form) {
+  const f = farmById(form.dataset.id); if (!f) return;
+  const amt = Number(String($("#pf_amt").value).replace(/[^\d.]/g, "")), plan = $("#pf_plan").value, pi = PLAN_INFO[plan];
+  if (!(amt > 0)) { toast("Enter the amount received.", true); $("#pf_amt").focus(); return; }
+  const from = f.paidUntil && f.paidUntil >= today() ? f.paidUntil : today(), until = addDays(from, pi.months * 30);
+  const payments = (f.payments || []).concat([{ date: $("#pf_date").value || today(), amount: amt, method: $("#pf_method").value, ref: $("#pf_ref").value.trim(), months: pi.months, by: S.uid }]);
+  try { await FDB.doc("farms/" + f.id).set({ plan, paidUntil: until, payments, status: "active" }, { merge: true }); closeSheet(); toast(`${money(amt)} recorded. ${f.name} paid till ${fdate(until, 1)}.`); }
+  catch (e) { toast(dbErr(e), true); }
+}
+document.addEventListener("click", e => {
+  const a = e.target.closest("[data-act]"); if (!a) return;
+  const f = a.dataset.id && farmById(a.dataset.id);
+  switch (a.dataset.act) {
+    case "farm-new": newFarmSheet(); break;
+    case "prov-set": provSheet(); break;
+    case "farm-tab": S.farmTab = a.dataset.f; render(); break;
+    case "farm-pay": if (f) paySheet(f); break;
+    case "farm-remind": if (f) remindSheet(f); break;
+    case "farm-more": if (f) farmMore(f); break;
+    case "farm-call": if (f) { closeSheet(); toast(f.phone ? `Calling ${f.phone}` : "Add the owner's phone number first."); } break;
+    case "rm-copy": { const tx = $("#rm_text").value; (navigator.clipboard ? navigator.clipboard.writeText(tx) : Promise.reject()).then(() => toast("Message copied")).catch(() => { $("#rm_text").select(); toast("Select and copy the message"); }); break; }
+  }
+}, true);
+document.addEventListener("submit", e => {
+  if (e.target.id === "payform") { e.preventDefault(); e.stopPropagation(); savePayment(e.target); }
+  if (e.target.id === "provform") { e.preventDefault(); e.stopPropagation();
+    const m = Number(String($("#pv_m").value).replace(/[^\d]/g, "")), y = Number(String($("#pv_y").value).replace(/[^\d]/g, "")), upi = $("#pv_upi").value.trim();
+    if (!(m > 0) || !(y > 0)) { toast("Enter both prices.", true); return; }
+    FDB.doc("provider/settings").set({ monthly: m, yearly: y, upi }, { merge: true }).then(() => { closeSheet(); toast("Prices and UPI saved"); }).catch(err => toast(dbErr(err), true)); }
+}, true);
+document.addEventListener("input", e => {
+  if (e.target.id === "rm_text") { const w = $("#rm_wa"); if (w) w.href = waLink(e.target.dataset.phone, e.target.value); }
+  if (e.target.id === "farm_q") { S.farmQ = e.target.value; const pos = e.target.selectionStart; render(); const el = $("#farm_q"); if (el) { el.focus(); el.setSelectionRange(pos, pos); } }
+});
+document.addEventListener("change", e => {
+  if (e.target.id === "nf_plan") { const p = PLAN_INFO[e.target.value], pr = $("#nf_price"); pr.disabled = !p.months; pr.value = p.months ? p.price : ""; }
+  if (e.target.id === "pf_plan") { const f = farmById($("#payform").dataset.id), pi = PLAN_INFO[e.target.value], from = f.paidUntil && f.paidUntil >= today() ? f.paidUntil : today(); $("#pf_amt").value = pi.price; $("#pf_prev").innerHTML = `<span>Access will run until <b>${fdate(addDays(from, pi.months * 30), 1)}</b>${f.status === "paused" ? " and the farm will be resumed" : ""}.</span>`; }
+});
+
 async function createFarm() {
-  const name = $("#nf_name").value.trim(), loc = $("#nf_loc").value.trim(), owner = $("#nf_owner").value.trim().toLowerCase(), plan = $("#nf_plan").value;
+  const name = $("#nf_name").value.trim(), loc = $("#nf_loc").value.trim(), owner = $("#nf_owner").value.trim().toLowerCase(), plan = $("#nf_plan").value, phone = $("#nf_phone").value.trim();
   if (!name) { toast("Enter the farm name.", true); $("#nf_name").focus(); return; }
   if (!/^[^@\s\/]+@[^@\s\/]+\.[^@\s\/]+$/.test(owner)) { toast("Enter the owner's full Google email.", true); $("#nf_owner").focus(); return; }
-  const ref = FDB.collection("farms").doc(), fid = ref.id, b = FDB.batch(), now = new Date().toISOString();
-  b.set(ref, { name, location: loc, owner, plan, status: "active", createdAt: now, createdBy: S.uid });
+  const ref = FDB.collection("farms").doc(), fid = ref.id, b = FDB.batch(), now = new Date().toISOString(), price = Number($("#nf_price").value) || null;
+  const doc = { name, location: loc, owner, phone, plan, status: "active", createdAt: now, createdBy: S.uid, payments: [] };
+  if (plan === "Trial") doc.trialEnds = addDays(today(), 14); else if (price) doc.price = price;
+  b.set(ref, doc);
   b.set(FDB.doc(`farms/${fid}/members/${owner}`), { role: "owner", addedBy: S.uid, at: now });
   b.set(FDB.doc(`memberships/${owner}/farms/${fid}`), { role: "owner", farmName: name });
   b.set(FDB.doc(`farms/${fid}/config/settings`), { farmName: name, currency: "₹" });
-  try { await b.commit(); toast(`${name} created. ${owner} can sign in now.`); ["nf_name", "nf_loc", "nf_owner"].forEach(id => $("#" + id).value = ""); S.setDirty = false; }
-  catch (e) { if (e && e.code === "permission-denied") { S.farmsErr = "permission-denied"; render(); toast("Blocked by the database: publish the farms rules in aqualedger-farms (see the red box at the top).", true); } else toast(dbErr(e), true); }
+  try { await b.commit(); closeSheet(); S.setDirty = false; toast(`${name} created. ${owner} can sign in now.`); }
+  catch (e) { toast(dbErr(e), true); }
 }
 
 async function loadSampleFb(sd, ORDER, total) {
