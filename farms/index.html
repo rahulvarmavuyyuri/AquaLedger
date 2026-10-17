@@ -571,7 +571,7 @@ svg.inc{width:100%;height:auto;display:block}
 .sh-h h2{margin:2px 0 0;font-size:22px}
 .form{display:flex;flex-direction:column;gap:12px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.sh-f{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+.sh-f{display:flex;justify-content:flex-end;gap:8px;margin-top:4px;flex-wrap:wrap}
 .hist{margin-top:16px;border-top:1px solid var(--line-soft);padding-top:12px}
 .hist h3{font-size:13px;color:var(--muted);margin:0 0 6px;font-weight:600}
 .hist div{display:grid;grid-template-columns:auto 1fr auto;gap:12px;padding:6px 0;font-size:13.5px}
@@ -587,6 +587,8 @@ svg.inc{width:100%;height:auto;display:block}
 .chk input{margin-top:3px;width:18px;height:18px;accent-color:var(--accent);flex:none}
 .chk b{display:block;font-weight:650}.chk .sub{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
 .fcard header{flex-wrap:wrap}
+.smlist{display:flex;flex-direction:column;gap:6px}.smhd{display:flex;justify-content:space-between;align-items:center}
+.chk.sm{padding:10px 12px}
 </style>
 </head>
 <body>
@@ -2427,6 +2429,7 @@ function farmMore(f) {
   openSheet(`<div class="sh-h"><div><span class="eyebrow">${esc(f.owner)}</span><h2>${esc(f.name)}</h2></div><button class="btn ghost sm" data-act="close">${ic("x")}</button></div>
   <div class="menu-list">
     <button data-act="farm-edit" data-id="${f.id}">${ic("edit")}Edit phone, location or price</button>
+    ${f.sample ? "" : `<button data-act="sample-one" data-id="${f.id}">${ic("box")}Load sample data into this farm</button>`}
     <button data-act="farm-remind" data-id="${f.id}">${ic("msg")}Send payment reminder</button>
     <button data-act="farm-call" data-id="${f.id}">${ic("phone")}Call owner${f.phone ? " · " + esc(f.phone) : ""}</button>
     <button data-act="farm-pause" data-id="${f.id}" data-to="${f.status === "paused" ? "active" : "paused"}" class="${f.status === "paused" ? "" : "danger"}">${ic(f.status === "paused" ? "check" : "alert")}${f.status === "paused" ? "Resume farm" : "Pause farm (team becomes read-only)"}</button>
@@ -2458,6 +2461,8 @@ document.addEventListener("click", e => {
     case "farm-new": newFarmSheet(); break;
     case "prov-set": provSheet(); break;
     case "sample-farms": sampleSheet(); break;
+    case "sample-one": if (f) sampleSheet(f.id); break;
+    case "sm-all": { const bx = $$(".sm_f"), on = bx.some(x => !x.checked); bx.forEach(x => x.checked = on); a.textContent = on ? "Clear all" : "Select all"; break; }
     case "sample-load": loadSampleFarms(); break;
     case "sample-clear": clearSampleFarms(); break;
     case "farm-edit": if (f) editSheet(f); break;
@@ -2532,20 +2537,22 @@ async function seedRecords(fid, opt = {}) {
   }
   return ops.length;
 }
-function sampleSheet() {
+function sampleSheet(sel = "all") {
   const nSample = S.allFarms.filter(f => f.sample).length, real = S.allFarms.filter(f => !f.sample);
   openSheet(`<div class="sh-h"><div><span class="eyebrow">Provider</span><h2>Sample data</h2></div><button class="btn ghost sm" data-act="close">${ic("x")}</button></div>
   <div class="form">
     <p>Try every screen with realistic data. Sample farms use made-up owner emails, so nobody can sign in to them, and everything sample is marked so you can remove it in one step.</p>
     <label class="chk"><input type="checkbox" id="sm_farms" ${nSample ? "disabled" : "checked"}> <span><b>Add 5 sample client farms</b><span class="sub">With ponds, feed, water, harvest, payments and activity. Shows paid, due, overdue, trial and paused farms.${nSample ? " Already added." : ""}</span></span></label>
-    <label class="chk"><input type="checkbox" id="sm_real" ${real.length ? "checked" : "disabled"}> <span><b>Fill my real farms that have no records yet</b><span class="sub">${real.length ? `Checks ${real.length} farm${real.length === 1 ? "" : "s"} and adds sample tanks and records only where the farm is empty.` : "You have no real farms yet."}</span></span></label>
+    ${real.length ? `<div class="smlist"><div class="smhd"><b>Add sample records to these farms</b><button type="button" class="btn ghost sm" data-act="sm-all">${sel === "all" ? "Clear all" : "Select all"}</button></div>
+      ${real.map(f => `<label class="chk sm"><input type="checkbox" class="sm_f" value="${f.id}" ${sel === "all" || sel === f.id ? "checked" : ""}> <span><b>${esc(f.name || "Farm")}</b><span class="sub">${esc(f.owner || "")}</span></span></label>`).join("")}
+      <p class="sub">Sample tanks and records are added next to anything already in the farm, and are marked so you can remove them later.</p></div>` : `<p class="sub">You have no real farms yet. Create one with New farm to fill it too.</p>`}
     <div class="preview" id="sm_prog" hidden></div>
     <div class="sh-f">${nSample || real.length ? `<button class="btn danger" data-act="sample-clear">Remove all sample data</button>` : ""}<button class="btn pri" data-act="sample-load">${ic("plus")}Load sample data</button></div>
   </div>`);
 }
 function smProg(t) { const el = $("#sm_prog"); if (el) { el.hidden = false; el.innerHTML = `<span>${t}</span>`; } }
 async function loadSampleFarms() {
-  const doFarms = $("#sm_farms") && $("#sm_farms").checked && !$("#sm_farms").disabled, doReal = $("#sm_real") && $("#sm_real").checked && !$("#sm_real").disabled;
+  const doFarms = $("#sm_farms") && $("#sm_farms").checked && !$("#sm_farms").disabled, pick = $$(".sm_f").filter(x => x.checked).map(x => x.value), doReal = pick.length > 0;
   if (!doFarms && !doReal) { toast("Tick at least one option.", true); return; }
   const btn = $('[data-act="sample-load"]'); if (btn) btn.disabled = true;
   const t = today(), D = n => addDays(t, n), now = new Date().toISOString();
@@ -2568,12 +2575,10 @@ async function loadSampleFarms() {
       try { await FDB.doc(`farms/${fid}/stats/activity`).set({ days, lastEntry: last == null ? D(-22) : D(last - 13), ponds: 4, live: sf.fish ? 96000 : 612000, team: sf.team, at: now }); } catch (e) { statsBlocked = true; }
       farms++;
     }
-    if (doReal) for (const f of S.allFarms.filter(x => !x.sample)) {
-      smProg(`Checking ${esc(f.name || "farm")}…`);
-      const snap = await FDB.collection(`farms/${f.id}/tanks`).limit(1).get();
-      if (!snap.empty) continue;
+    if (doReal) for (const f of S.allFarms.filter(x => pick.includes(x.id))) {
       smProg(`Adding sample records to ${esc(f.name || "farm")}…`);
       await seedRecords(f.id); filled++;
+      try { await FDB.doc(`farms/${f.id}/stats/activity`).set({ ponds: 5, team: 1, lastEntry: t, at: now }, { merge: true }); } catch (e) { statsBlocked = true; }
     }
     closeSheet();
     toast(`Sample data loaded: ${farms} sample farm${farms === 1 ? "" : "s"}${doReal ? `, ${filled} real farm${filled === 1 ? "" : "s"} filled` : ""}.${statsBlocked ? " Activity bars need the new farms rules published." : ""}`);
