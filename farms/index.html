@@ -2422,10 +2422,21 @@ function provSheet() {
 function farmMore(f) {
   openSheet(`<div class="sh-h"><div><span class="eyebrow">${esc(f.owner)}</span><h2>${esc(f.name)}</h2></div><button class="btn ghost sm" data-act="close">${ic("x")}</button></div>
   <div class="menu-list">
+    <button data-act="farm-edit" data-id="${f.id}">${ic("edit")}Edit phone, location or price</button>
     <button data-act="farm-remind" data-id="${f.id}">${ic("msg")}Send payment reminder</button>
     <button data-act="farm-call" data-id="${f.id}">${ic("phone")}Call owner${f.phone ? " · " + esc(f.phone) : ""}</button>
     <button data-act="farm-pause" data-id="${f.id}" data-to="${f.status === "paused" ? "active" : "paused"}" class="${f.status === "paused" ? "" : "danger"}">${ic(f.status === "paused" ? "check" : "alert")}${f.status === "paused" ? "Resume farm" : "Pause farm (team becomes read-only)"}</button>
   </div>`);
+}
+function editSheet(f) {
+  const info = PLAN_INFO[f.plan] || {};
+  openSheet(`<div class="sh-h"><div><span class="eyebrow">${esc(f.name)}</span><h2>Farm details</h2></div><button class="btn ghost sm" data-act="close">${ic("x")}</button></div>
+  <form id="editfarm" class="form" data-id="${f.id}" novalidate>
+    <div class="grid2"><div class="fld"><label for="ef_phone">Owner's phone</label><input class="in" id="ef_phone" type="tel" value="${esc(f.phone || "")}" placeholder="98480 12345" autocomplete="off"></div>
+    <div class="fld"><label for="ef_loc">Location</label><input class="in" id="ef_loc" value="${esc(f.location || "")}" autocomplete="off"></div></div>
+    ${info.months ? `<div class="fld"><label for="ef_price">Price for this farm (₹ per ${info.months === 12 ? "year" : "month"})</label><input class="in" id="ef_price" inputmode="numeric" value="${esc(f.price ?? "")}" placeholder="Standard: ${info.price}"></div>` : ""}
+    <div class="sh-f"><button type="button" class="btn ghost" data-act="close">Cancel</button><button class="btn pri" type="submit">${ic("check")}Save</button></div>
+  </form>`);
 }
 async function savePayment(form) {
   const f = farmById(form.dataset.id); if (!f) return;
@@ -2442,6 +2453,7 @@ document.addEventListener("click", e => {
   switch (a.dataset.act) {
     case "farm-new": newFarmSheet(); break;
     case "prov-set": provSheet(); break;
+    case "farm-edit": if (f) editSheet(f); break;
     case "farm-tab": S.farmTab = a.dataset.f; render(); break;
     case "farm-pay": if (f) paySheet(f); break;
     case "farm-remind": if (f) remindSheet(f); break;
@@ -2452,6 +2464,10 @@ document.addEventListener("click", e => {
 }, true);
 document.addEventListener("submit", e => {
   if (e.target.id === "payform") { e.preventDefault(); e.stopPropagation(); savePayment(e.target); }
+  if (e.target.id === "editfarm") { e.preventDefault(); e.stopPropagation();
+    const id = e.target.dataset.id, pr = $("#ef_price"), o = { phone: $("#ef_phone").value.trim(), location: $("#ef_loc").value.trim() };
+    if (pr) { const v = Number(String(pr.value).replace(/[^\d]/g, "")); o.price = v > 0 ? v : firebase.firestore.FieldValue.delete(); }
+    FDB.doc("farms/" + id).set(o, { merge: true }).then(() => { closeSheet(); toast("Farm details saved"); }).catch(err => toast(dbErr(err), true)); }
   if (e.target.id === "provform") { e.preventDefault(); e.stopPropagation();
     const m = Number(String($("#pv_m").value).replace(/[^\d]/g, "")), y = Number(String($("#pv_y").value).replace(/[^\d]/g, "")), upi = $("#pv_upi").value.trim();
     if (!(m > 0) || !(y > 0)) { toast("Enter both prices.", true); return; }
