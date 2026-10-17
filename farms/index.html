@@ -583,6 +583,10 @@ svg.inc{width:100%;height:auto;display:block}
 @media (max-width:900px){.adm-row{grid-template-columns:1fr}.srch{width:100%}.fcards{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:420px){.grid2{grid-template-columns:1fr}.use{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
+.chk{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:12px;border:1px solid var(--line-soft);background:rgba(3,17,27,.45);cursor:pointer}
+.chk input{margin-top:3px;width:18px;height:18px;accent-color:var(--accent);flex:none}
+.chk b{display:block;font-weight:650}.chk .sub{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.fcard header{flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -2329,7 +2333,7 @@ VIEWS.admin = () => {
   }).sort((a, b) => B.get(a.id).sort - B.get(b.id).sort || (a.name || "").localeCompare(b.name || ""));
   const fu = followUps(all);
 
-  return farmsDiag() + phead("Provider", "All farms", "Your client farms, their payments and how actively they use AquaLedger.", `<button class="btn" data-act="prov-set">${ic("gear")}Prices &amp; UPI</button><button class="btn pri" data-act="farm-new">${ic("plus")}New farm</button>`) +
+  return farmsDiag() + phead("Provider", "All farms", "Your client farms, their payments and how actively they use AquaLedger.", `<button class="btn" data-act="sample-farms">${ic("box")}Sample data</button><button class="btn" data-act="prov-set">${ic("gear")}Prices &amp; UPI</button><button class="btn pri" data-act="farm-new">${ic("plus")}New farm</button>`) +
     `<div class="kpis">
       <div class="kpi"><div class="k">Client farms</div><div class="v">${all.length}</div><div class="s">${active.length} active · ${all.length - active.length} paused</div></div>
       <div class="kpi pos"><div class="k">Monthly income</div><div class="v">${money(Math.round(mrr))}</div><div class="s">from active paid plans</div></div>
@@ -2351,7 +2355,7 @@ VIEWS.admin = () => {
       ${shown.length ? `<div class="fcards">${shown.map(f => {
         const b = B.get(f.id), u = farmUse(f), ls = lastSeen(u.lastEntry), info = PLAN_INFO[f.plan] || {};
         return `<article class="fcard ${f.status === "paused" ? "off" : ""}">
-          <header><div class="grow"><h3>${esc(f.name)}</h3><span class="sub">${esc(f.location || "")}${f.location ? " · " : ""}since ${fdate((f.createdAt || "").slice(0, 10))}</span></div>
+          <header><div class="grow"><h3>${esc(f.name)}</h3><span class="sub">${f.sample ? "Sample farm · " : ""}${esc(f.location || "")}${f.location ? " · " : ""}since ${fdate((f.createdAt || "").slice(0, 10))}</span></div>
             <span class="chip ${b.chip}"><span class="dot"></span>${b.label}</span></header>
           <div class="who">${ic("grid")}<span class="grow">${esc(f.owner)}</span>${f.phone ? `<a class="tn" href="tel:${esc(f.phone)}">${ic("phone")}${esc(f.phone)}</a>` : ""}</div>
           <dl class="use">
@@ -2453,6 +2457,9 @@ document.addEventListener("click", e => {
   switch (a.dataset.act) {
     case "farm-new": newFarmSheet(); break;
     case "prov-set": provSheet(); break;
+    case "sample-farms": sampleSheet(); break;
+    case "sample-load": loadSampleFarms(); break;
+    case "sample-clear": clearSampleFarms(); break;
     case "farm-edit": if (f) editSheet(f); break;
     case "farm-tab": S.farmTab = a.dataset.f; render(); break;
     case "farm-pay": if (f) paySheet(f); break;
@@ -2495,6 +2502,102 @@ async function createFarm() {
   b.set(FDB.doc(`farms/${fid}/config/settings`), { farmName: name, currency: "₹" });
   try { await b.commit(); closeSheet(); S.setDirty = false; toast(`${name} created. ${owner} can sign in now.`); }
   catch (e) { toast(dbErr(e), true); }
+}
+
+/* ----- provider sample data: sample client farms + sample records in empty real farms ----- */
+const SAMPLE_FARMS = [
+  { key: "godavari", name: "Godavari Shrimp Farms", location: "Narsapur", owner: "ravi.godavari@example.com", phone: "99890 45612", plan: "Monthly", age: 130, paid: 3, pays: [118, 88, 57, 27], prefix: "G", ponds: ["Godavari Pond 1", "Godavari Pond 2", "Nursery G1", "Canal Pond", "Pond G4"], act: [5,6,5,6,6,5,7,6,5,6,6,7,6,4], team: 3 },
+  { key: "kolleru", name: "Kolleru Lake Fisheries", location: "Kaikaluru", owner: "kolleru.fish@example.com", phone: "94400 66789", plan: "Yearly", age: 150, paid: 215, pays: [150], prefix: "K", fish: true, ponds: ["Rohu Pond 1", "Rohu Pond 2", "Katla Pond", "Fish Pond K1", "Pond K4"], act: [9,10,8,11,9,10,12,9,10,11,9,10,11,8], team: 5 },
+  { key: "konaseema", name: "Konaseema Vannamei", location: "Amalapuram", owner: "srinu.konaseema@example.com", phone: "97010 22334", plan: "Monthly", age: 70, paid: -6, pays: [66, 36], prefix: "V", ponds: ["Vannamei 1", "Vannamei 2", "Nursery V1", "Pond V3", "Pond V4"], act: [4,5,4,4,5,3,4,5,4,4,3,4,5,0], team: 2 },
+  { key: "machili", name: "Machilipatnam Hatchery", location: "Machilipatnam", owner: "anil.hatchery@example.com", phone: "98660 33445", plan: "Trial", age: 12, trial: 2, pays: [], prefix: "M", ponds: ["Hatchery H1", "Hatchery H2", "Nursery M1", "Pond M3", "Pond M4"], act: [3,2,4,1,0,0,0,0,0,0,0,0,0,0], team: 1 },
+  { key: "krishna", name: "Krishna Fish Ponds", location: "Eluru", owner: "priya.krishna@example.com", phone: "90000 78123", plan: "Monthly", age: 95, paid: -21, pays: [81, 51], paused: true, prefix: "E", fish: true, ponds: ["Tilapia Pond", "Rohu Pond E1", "Pond E2", "Pond E3", "Pond E4"], act: Array(14).fill(0), team: 2 },
+];
+async function seedRecords(fid, opt = {}) {
+  const sd = sampleData(), ORDER = ["tanks", "items", "stocking", "feed", "water", "mortality", "medication", "purchases", "expenses", "harvest"];
+  const tankIds = {}, itemIds = {}, ops = [], now = new Date().toISOString();
+  ORDER.forEach(col => sd[col].forEach((r, k) => {
+    const ref = FDB.collection(`farms/${fid}/${col}`).doc();
+    if (col === "tanks") { tankIds[r._k] = ref.id; if (opt.prefix) { r.code = opt.prefix + "-" + String(k + 1).padStart(2, "0"); if (opt.ponds && opt.ponds[k]) r.name = opt.ponds[k]; } if (opt.fish) r.species = "Fish"; }
+    if (col === "items") itemIds[r._k] = ref.id;
+    ops.push([ref, r]);
+  }));
+  for (let i = 0; i < ops.length; i += 400) {
+    const b = FDB.batch();
+    ops.slice(i, i + 400).forEach(([ref, r]) => {
+      const o = { ...r, sample: true, at: now, by: S.uid || null };
+      if ("_tank" in o) o.tankId = o._tank ? tankIds[o._tank] : ""; if ("_item" in o) o.itemId = itemIds[o._item];
+      delete o._k; delete o._tank; delete o._item; b.set(ref, o);
+    });
+    await withRetry(() => b.commit());
+  }
+  return ops.length;
+}
+function sampleSheet() {
+  const nSample = S.allFarms.filter(f => f.sample).length, real = S.allFarms.filter(f => !f.sample);
+  openSheet(`<div class="sh-h"><div><span class="eyebrow">Provider</span><h2>Sample data</h2></div><button class="btn ghost sm" data-act="close">${ic("x")}</button></div>
+  <div class="form">
+    <p>Try every screen with realistic data. Sample farms use made-up owner emails, so nobody can sign in to them, and everything sample is marked so you can remove it in one step.</p>
+    <label class="chk"><input type="checkbox" id="sm_farms" ${nSample ? "disabled" : "checked"}> <span><b>Add 5 sample client farms</b><span class="sub">With ponds, feed, water, harvest, payments and activity. Shows paid, due, overdue, trial and paused farms.${nSample ? " Already added." : ""}</span></span></label>
+    <label class="chk"><input type="checkbox" id="sm_real" ${real.length ? "checked" : "disabled"}> <span><b>Fill my real farms that have no records yet</b><span class="sub">${real.length ? `Checks ${real.length} farm${real.length === 1 ? "" : "s"} and adds sample tanks and records only where the farm is empty.` : "You have no real farms yet."}</span></span></label>
+    <div class="preview" id="sm_prog" hidden></div>
+    <div class="sh-f">${nSample || real.length ? `<button class="btn danger" data-act="sample-clear">Remove all sample data</button>` : ""}<button class="btn pri" data-act="sample-load">${ic("plus")}Load sample data</button></div>
+  </div>`);
+}
+function smProg(t) { const el = $("#sm_prog"); if (el) { el.hidden = false; el.innerHTML = `<span>${t}</span>`; } }
+async function loadSampleFarms() {
+  const doFarms = $("#sm_farms") && $("#sm_farms").checked && !$("#sm_farms").disabled, doReal = $("#sm_real") && $("#sm_real").checked && !$("#sm_real").disabled;
+  if (!doFarms && !doReal) { toast("Tick at least one option.", true); return; }
+  const btn = $('[data-act="sample-load"]'); if (btn) btn.disabled = true;
+  const t = today(), D = n => addDays(t, n), now = new Date().toISOString();
+  let farms = 0, filled = 0, statsBlocked = false;
+  try {
+    if (doFarms) for (const sf of SAMPLE_FARMS) {
+      smProg(`Adding ${esc(sf.name)}…`);
+      const fid = "sample_" + sf.key, b = FDB.batch(), price = PLAN_INFO[sf.plan] ? PLAN_INFO[sf.plan].price : 0;
+      const doc = { name: sf.name, location: sf.location, owner: sf.owner, phone: sf.phone, plan: sf.plan, status: sf.paused ? "paused" : "active", sample: true,
+        createdAt: D(-sf.age) + "T09:00:00.000Z", createdBy: S.uid, payments: sf.pays.map(n => ({ date: D(-n), amount: price, method: n % 2 ? "UPI" : "Bank transfer", months: PLAN_INFO[sf.plan].months })) };
+      if (sf.plan === "Trial") doc.trialEnds = D(sf.trial); else doc.paidUntil = D(sf.paid);
+      b.set(FDB.doc(`farms/${fid}`), doc);
+      b.set(FDB.doc(`farms/${fid}/members/${sf.owner}`), { role: "owner", addedBy: S.uid, at: now, sample: true });
+      b.set(FDB.doc(`memberships/${sf.owner}/farms/${fid}`), { role: "owner", farmName: sf.name, sample: true });
+      b.set(FDB.doc(`farms/${fid}/config/settings`), { farmName: sf.name, currency: "₹", staff: ["Ramesh", "Suresh", "Lakshmi"] });
+      await withRetry(() => b.commit());
+      await seedRecords(fid, sf);
+      const days = {}; sf.act.forEach((v, i) => { if (v) days[D(i - 13)] = v; });
+      const last = sf.act.map((v, i) => v ? i : -1).filter(i => i >= 0).pop();
+      try { await FDB.doc(`farms/${fid}/stats/activity`).set({ days, lastEntry: last == null ? D(-22) : D(last - 13), ponds: 4, live: sf.fish ? 96000 : 612000, team: sf.team, at: now }); } catch (e) { statsBlocked = true; }
+      farms++;
+    }
+    if (doReal) for (const f of S.allFarms.filter(x => !x.sample)) {
+      smProg(`Checking ${esc(f.name || "farm")}…`);
+      const snap = await FDB.collection(`farms/${f.id}/tanks`).limit(1).get();
+      if (!snap.empty) continue;
+      smProg(`Adding sample records to ${esc(f.name || "farm")}…`);
+      await seedRecords(f.id); filled++;
+    }
+    closeSheet();
+    toast(`Sample data loaded: ${farms} sample farm${farms === 1 ? "" : "s"}${doReal ? `, ${filled} real farm${filled === 1 ? "" : "s"} filled` : ""}.${statsBlocked ? " Activity bars need the new farms rules published." : ""}`);
+  } catch (e) { toast(dbErr(e), true); if (btn) btn.disabled = false; }
+}
+async function clearSampleFarms() {
+  const btn = $('[data-act="sample-clear"]'); if (btn) btn.disabled = true;
+  try {
+    for (const f of S.allFarms) {
+      smProg(`Cleaning ${esc(f.name || "farm")}…`);
+      const refs = [];
+      for (const col of COLS) {
+        const q = f.sample ? FDB.collection(`farms/${f.id}/${col}`) : FDB.collection(`farms/${f.id}/${col}`).where("sample", "==", true);
+        (await q.get()).docs.forEach(d => refs.push(d.ref));
+      }
+      if (f.sample) {
+        (await FDB.collection(`farms/${f.id}/members`).get()).docs.forEach(d => { refs.push(d.ref); refs.push(FDB.doc(`memberships/${d.id}/farms/${f.id}`)); });
+        refs.push(FDB.doc(`farms/${f.id}/config/settings`), FDB.doc(`farms/${f.id}/stats/activity`));
+      }
+      for (let i = 0; i < refs.length; i += 400) { const b = FDB.batch(); refs.slice(i, i + 400).forEach(r => b.delete(r)); await withRetry(() => b.commit()); }
+      if (f.sample) await FDB.doc(`farms/${f.id}`).delete();
+    }
+    closeSheet(); toast("Sample data removed");
+  } catch (e) { toast(dbErr(e), true); if (btn) btn.disabled = false; }
 }
 
 async function loadSampleFb(sd, ORDER, total) {
