@@ -2020,7 +2020,7 @@ document.addEventListener("click", e => {
   switch (act) {
     case "add": closeSheet(); openForm(a.dataset.mod, null, a.dataset.tank ? { tankId: a.dataset.tank } : {}); break;
     case "edit": openForm(a.dataset.mod, a.dataset.id); break;
-    case "close": closeDrawer(); break;
+    case "close": if (a.closest("#sheet")) closeSheet(); else closeDrawer(); break;
     case "menu": S.menu = S.menu === a.dataset.src ? null : a.dataset.src; render(); break;
     case "quick": openSheet(`<h3>Log an entry</h3><div class="qgrid">${LOGS.map(([m, l, s]) => `<button data-act="add" data-mod="${m}"><span class="ic">${ic(M[m].icon)}</span><span>${l}<small>${s}</small></span></button>`).join("")}</div>`); break;
     case "more": openSheet(`${farmSwitchHTML().replace('id="farmsel"', 'id="farmsel2"').replace('for="farmsel"', 'for="farmsel2"')}<h3>All sections</h3><div class="qgrid">${navAll().flatMap(n => n[1]).map(([k, l, i]) => `<a href="#${k}"><span class="ic">${ic(i)}</span>${l}</a>`).join("")}</div>`); break;
