@@ -541,6 +541,16 @@ svg.inc{width:100%;height:auto;display:block}
 .recent{display:flex;flex-direction:column;margin-top:8px;border-top:1px solid var(--line-soft)}
 .recent div{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:baseline;padding:9px 2px;border-bottom:1px solid var(--line-soft);font-size:13.5px}
 .recent .sub{font-size:12px;color:var(--muted)}
+.pgh{font-size:13px;color:var(--muted);font-weight:650;margin:18px 0 8px}.pgh:first-child{margin-top:0}
+.fu li.ok{border-left-color:var(--ok)}.fu li.plain{border-left-color:var(--line-soft)}
+.fu .rmain{font-weight:600;color:var(--muted);font-size:12.5px;margin-left:4px}
+.fu .racts{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.fu .amt{font-size:14.5px;white-space:nowrap}.fu .dupl{color:var(--warn);font-style:normal;font-weight:600}
+.pfilt{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}.pfilt select{width:auto;min-width:140px}
+.bars{display:flex;flex-direction:column;gap:10px}.bars div{display:grid;grid-template-columns:minmax(0,9em) 1fr auto;gap:10px;align-items:center;font-size:13.5px}
+.bars span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bars i{display:block;height:10px;border-radius:5px;background:var(--accent);opacity:.8}
+.spark.mini{height:22px;width:84px;gap:2px}
+@media (max-width:720px){.fu li{flex-wrap:wrap}.fu .racts{width:100%;justify-content:flex-start}.fu li .amt+.btn{margin-left:auto}}
 .srch{position:relative;display:block;width:min(280px,100%)}
 .srch .i{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--muted)}
 .srch .in{padding-left:36px;height:38px}
@@ -1147,7 +1157,7 @@ function doRender() {
   const sel = aid && "selectionStart" in ae ? [ae.selectionStart, ae.selectionEnd] : null;
   const v = $("#view");
   if (!enter) v.classList.remove("enter");
-  v.innerHTML = S.mode === "auth" ? authView() : S.mode === "pending" ? pendingView() : (S.fb && S.isSeller && !S.farmId && S.mode === "db") ? VIEWS.admin() : (VIEWS[S.route.name] ? VIEWS[S.route.name]() : VIEWS.dashboard());
+  v.innerHTML = S.mode === "auth" ? authView() : S.mode === "pending" ? pendingView() : (S.fb && S.isSeller && !S.farmId && S.mode === "db") ? (S.route.name.startsWith("p_") && VIEWS[S.route.name] ? VIEWS[S.route.name]() : VIEWS.admin()) : (VIEWS[S.route.name] ? VIEWS[S.route.name]() : VIEWS.dashboard());
   [...v.children].forEach((c, i) => c.style.setProperty("--i", i));
   $$(".tank", v).forEach((c, i) => c.style.setProperty("--i", i));
   if (enter) { v.classList.remove("enter"); void v.offsetWidth; v.classList.add("enter"); window.scrollTo(0, 0); countUp(); S.lastKey = key; S.setDirty = false; }
@@ -1167,7 +1177,7 @@ function countUp() {
 }
 
 /* ---------------- navigation ---------------- */
-function navAll() { return (S.fb && S.isSeller ? [["Provider", [["admin", "All farms", "grid"]]]] : []).concat(S.fb && !S.farmId ? [] : NAV); }
+function navAll() { return (S.fb && S.isSeller ? [["Provider", S.farmId ? [["admin", "All farms", "grid"]] : PROV_NAV]] : []).concat(S.fb && !S.farmId ? [] : NAV); }
 const NAV = [
   ["Overview", [["dashboard", "Dashboard", "grid"], ["tanks", "Tanks", "tank"]]],
   ["Daily logs", [["feed", "Feed", "feed"], ["water", "Water quality", "drop"], ["medication", "Medication", "pill"], ["mortality", "Mortality", "pulse"]]],
@@ -2043,7 +2053,7 @@ document.addEventListener("click", e => {
     case "close": if (a.closest("#sheet")) closeSheet(); else closeDrawer(); break;
     case "menu": S.menu = S.menu === a.dataset.src ? null : a.dataset.src; render(); break;
     case "quick": openSheet(`<h3>Log an entry</h3><div class="qgrid">${LOGS.map(([m, l, s]) => `<button data-act="add" data-mod="${m}"><span class="ic">${ic(M[m].icon)}</span><span>${l}<small>${s}</small></span></button>`).join("")}</div>`); break;
-    case "more": openSheet(`${farmSwitchHTML().replace('id="farmsel"', 'id="farmsel2"').replace('for="farmsel"', 'for="farmsel2"')}<h3>All sections</h3><div class="qgrid">${navAll().flatMap(n => n[1]).map(([k, l, i]) => `<a href="#${k}"><span class="ic">${ic(i)}</span>${l}</a>`).join("")}</div>`); break;
+    case "more": openSheet(`${farmSwitchHTML().replace('id="farmsel"', 'id="farmsel2"').replace('for="farmsel"', 'for="farmsel2"')}<h3>All sections</h3><div class="qgrid">${navAll().flatMap(n => n[1]).map(([k, l, i]) => { const sb = S.fb && S.isSeller && !S.farmId && typeof provSub === "function" ? provSub(k) : ""; return `<a href="#${k}"><span class="ic">${ic(i)}</span><span>${l}${sb ? `<small>${esc(sb)}</small>` : ""}</span></a>`; }).join("")}${S.fb && S.isSeller && !S.farmId ? `<button data-act="prov-set"><span class="ic">${ic("gear")}</span><span>Prices and UPI<small>${esc(S.provSettings && S.provSettings.upi ? S.provSettings.upi : "Plan prices, your UPI ID")}</small></span></button>` : ""}</div>`); break;
     case "tankf": S.tankFilter = a.dataset.f; if (S.route.name === "tanks") { S.forceAnim = true; render(); } break;
     case "more-rows": S.lim[a.dataset.mod] = (S.lim[a.dataset.mod] || 60) + 60; render(); break;
     case "del-ask": $("#delzone").innerHTML = `<span class="confirm">Delete this entry? <button type="button" class="btn sm danger" data-act="del-yes">Delete</button><button type="button" class="btn sm ghost" data-act="del-no">Keep</button></span>`; break;
@@ -2294,7 +2304,9 @@ const PAY_METHODS = ["UPI", "Bank transfer", "Cash"];
   if (!sp || document.getElementById("i-phone")) return;
   sp.insertAdjacentHTML("beforeend", `<symbol id="i-phone" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M5 4h3.5l1.6 4.2-2.2 1.4a11 11 0 0 0 6.5 6.5l1.4-2.2L20 15.5V19a1.5 1.5 0 0 1-1.6 1.5A16.5 16.5 0 0 1 3.5 5.6 1.5 1.5 0 0 1 5 4Z"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></g></symbol>
-  <symbol id="i-msg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M4 5h16v11H9l-5 4z"/></symbol>`);
+  <symbol id="i-msg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M4 5h16v11H9l-5 4z"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.5" width="16" height="14.5" rx="2"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4M12 13.5v3h2.5"/></g></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 2"/></g></symbol>`);
 })();
 function billing(f) {
   const t = today(), info = PLAN_INFO[f.plan] || PLAN_INFO.Monthly;
@@ -2363,14 +2375,14 @@ function followUps(farms) {
   });
   return out.sort((a, b) => ({ crit: 0, warn: 1, info: 2 })[a.sev] - ({ crit: 0, warn: 1, info: 2 })[b.sev]);
 }
-function incomeChart() {
-  const t = today(), months = []; for (let i = 5; i >= 0; i--) { const d = new Date(+t.slice(0, 4), +t.slice(5, 7) - 1 - i, 1); months.push(`${d.getFullYear()}-${pad(d.getMonth() + 1)}`); }
+function incomeChart(n = 6) {
+  const t = today(), months = []; for (let i = n - 1; i >= 0; i--) { const d = new Date(+t.slice(0, 4), +t.slice(5, 7) - 1 - i, 1); months.push(`${d.getFullYear()}-${pad(d.getMonth() + 1)}`); }
   const pays = farmPayments(), vals = months.map(m => sum(pays.filter(p => p.date.startsWith(m)), "amount"));
   const W = 520, H = 190, L = 44, R = 8, T = 12, B = 26, mx = Math.max(10000, ...vals), step = mx > 40000 ? 20000 : 10000, top = Math.ceil(mx / step) * step;
   const y = v => T + (H - T - B) * (1 - v / top), cw = (W - L - R) / months.length;
   let s = `<svg viewBox="0 0 ${W} ${H}" class="inc" role="img" aria-label="Payments collected per month">`;
   for (let v = 0; v <= top; v += step) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" class="g"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${v ? "₹" + v / 1000 + "k" : "0"}</text>`;
-  vals.forEach((v, i) => { const x = L + i * cw + cw * .22, w = cw * .56; s += `<rect x="${x}" y="${y(v)}" width="${w}" height="${Math.max(0, y(0) - y(v))}" rx="5" class="b${i === 5 ? " now" : ""}"><title>${MON[+months[i].slice(5) - 1]}: ${money(v)}</title></rect>${v ? `<text x="${x + w / 2}" y="${y(v) - 6}" text-anchor="middle" class="vl">${v >= 1000 ? "₹" + nfx(v / 1000, 1) + "k" : money(v)}</text>` : ""}<text x="${x + w / 2}" y="${H - 7}" text-anchor="middle">${MON[+months[i].slice(5) - 1]}</text>`; });
+  vals.forEach((v, i) => { const x = L + i * cw + cw * .22, w = cw * .56; s += `<rect x="${x}" y="${y(v)}" width="${w}" height="${Math.max(0, y(0) - y(v))}" rx="5" class="b${i === n - 1 ? " now" : ""}"><title>${MON[+months[i].slice(5) - 1]}: ${money(v)}</title></rect>${v ? `<text x="${x + w / 2}" y="${y(v) - 6}" text-anchor="middle" class="vl">${v >= 1000 ? "₹" + nfx(v / 1000, 1) + "k" : money(v)}</text>` : ""}<text x="${x + w / 2}" y="${H - 7}" text-anchor="middle">${MON[+months[i].slice(5) - 1]}</text>`; });
   return s + `</svg>`;
 }
 
@@ -2432,6 +2444,141 @@ VIEWS.admin = () => {
         </article>`; }).join("")}</div>`
       : emptyState("grid", all.length ? "No farms match" : "No client farms yet", all.length ? "Try another search or tab." : "Tap New farm to add your first client.")}</section>`;
 };
+
+/* ===== Provider sections: Payments, Renewals, Trials, Reminders, Revenue, Farm activity ===== */
+const PROV_NAV = [["admin", "All farms", "grid"], ["p_payments", "Payments", "coin"], ["p_renewals", "Renewals", "cal"], ["p_trials", "Trials", "clock"], ["p_reminders", "Reminders", "msg"], ["p_revenue", "Revenue", "chart"], ["p_activity", "Farm activity", "pulse"]];
+const PROV = {};
+PROV_NAV.slice(1).forEach(([k]) => { VIEWS[k] = () => (S.isSeller && !S.farmId && PROV[k]) ? PROV[k]() : VIEWS.dashboard(); });
+const provBack = () => `<a class="btn" href="#admin">${ic("left")}All farms</a>`;
+function allPays() {
+  const out = []; S.allFarms.forEach(f => (f.payments || []).forEach((p, i) => out.push({ ...p, farm: f.name, fid: f.id, idx: i })));
+  return out.sort((a, b) => b.date.localeCompare(a.date) || (b.at || "").localeCompare(a.at || ""));
+}
+function monthKeys(n) { const t = today(), out = []; for (let i = n - 1; i >= 0; i--) { const d = new Date(+t.slice(0, 4), +t.slice(5, 7) - 1 - i, 1); out.push(`${d.getFullYear()}-${pad(d.getMonth() + 1)}`); } return out; }
+const monLabel = m => `${MON[+m.slice(5, 7) - 1]} ${m.slice(0, 4)}`;
+function renewalsOf() {
+  const t = today(), rows = [];
+  S.allFarms.forEach(f => {
+    if (f.status === "paused" || f.plan === "Trial") return;
+    const info = PLAN_INFO[f.plan] || PLAN_INFO.Monthly, price = f.price ?? info.price;
+    const left = f.paidUntil ? dnum(f.paidUntil) - dnum(t) : -1;
+    if (left <= 30) rows.push({ f, left, price, grp: left < 0 ? "overdue" : left <= 7 ? "week" : "month" });
+  });
+  return rows.sort((a, b) => a.left - b.left);
+}
+function trialsOf() {
+  const t = today();
+  return S.allFarms.filter(f => f.plan === "Trial" && f.status !== "paused").map(f => {
+    const end = f.trialEnds || addDays((f.createdAt || t).slice(0, 10), 14);
+    return { f, end, left: dnum(end) - dnum(t) };
+  }).sort((a, b) => a.left - b.left);
+}
+function remindersOf() {
+  return S.allFarms.filter(f => f.status !== "paused").map(f => ({ f, b: billing(f) }))
+    .filter(x => x.b.k === "overdue" || x.b.k === "due" || (x.b.k === "trial" && x.b.days <= 3))
+    .sort((a, b) => (a.b.days ?? -1) - (b.b.days ?? -1));
+}
+function remText(f, b) {
+  const upi = S.provSettings && S.provSettings.upi ? ` You can pay by UPI to ${S.provSettings.upi}.` : "";
+  if (f.plan === "Trial") return `Hello, this is a reminder from AquaLedger. ${f.name}'s free trial ${b.days >= 0 ? `ends on ${fdate(addDays(today(), b.days))}` : "has ended"}. To keep using AquaLedger, the monthly plan is ${money(PLAN_INFO.Monthly.price)}.${upi} Thank you.`;
+  return reminderText(f);
+}
+function remSent() { try { return JSON.parse(localStorage.getItem("al:remsent") || "{}"); } catch (e) { return {}; } }
+function markSent(id) { try { const o = remSent(); o[id] = new Date().toISOString(); localStorage.setItem("al:remsent", JSON.stringify(o)); } catch (e) {} }
+function provSub(k) {
+  const t = today();
+  if (k === "admin") return `${S.allFarms.length} farm${S.allFarms.length === 1 ? "" : "s"}`;
+  if (k === "p_payments") { const n = allPays().filter(p => p.date.startsWith(t.slice(0, 7))).length; return `${n} this month`; }
+  if (k === "p_renewals") { const r = renewalsOf(), o = r.filter(x => x.grp === "overdue").length, w = r.filter(x => x.grp === "week").length; return o || w ? `${w} this week · ${o} overdue` : "All paid up"; }
+  if (k === "p_trials") { const n = trialsOf().length; return `${n} trial${n === 1 ? "" : "s"}`; }
+  if (k === "p_reminders") { const n = remindersOf().length; return n ? `${n} to send` : "None due"; }
+  if (k === "p_revenue") return `${money(Math.round(sum(S.allFarms.filter(f => f.status !== "paused"), monthlyValue)))}/mo`;
+  if (k === "p_activity") { const n = S.allFarms.filter(f => f.status !== "paused" && lastSeen(farmUse(f).lastEntry).c === "warn").length; return n ? `${n} quiet` : "All active"; }
+  return "";
+}
+function farmRow(cls, f, main, sub, acts) { return `<li class="${cls}"><div class="grow"><b>${esc(f.name)}${main ? ` <span class="rmain">${main}</span>` : ""}</b><span>${sub}</span></div><div class="racts">${acts}</div></li>`; }
+const callBtn = f => f.phone ? `<a class="btn sm" href="tel:${esc(f.phone)}">${ic("phone")}Call</a>` : "";
+const waBtn = (f, text, label = "WhatsApp") => f.phone ? `<a class="btn sm" target="_blank" rel="noopener" data-act="rem-sent" data-id="${f.id}" href="${waLink(f.phone, text)}">${ic("msg")}${label}</a>` : `<button class="btn sm ghost" data-act="farm-edit" data-id="${f.id}">${ic("edit")}Add phone</button>`;
+function group(title, items) { return items.length ? `<h3 class="pgh">${title} <span class="tcount">${items.length}</span></h3><ul class="fu">${items.join("")}</ul>` : ""; }
+
+PROV.p_payments = () => {
+  const all = allPays(), m = S.payM || today().slice(0, 7), q = norm(S.payQ);
+  const dupKey = p => `${p.fid}|${p.date}|${p.amount}`, cnt = {}; all.forEach(p => cnt[dupKey(p)] = (cnt[dupKey(p)] || 0) + 1);
+  const rows = all.filter(p => (m === "all" || p.date.startsWith(m)) && (!q || norm(p.farm + " " + (p.ref || "") + " " + p.method).includes(q)));
+  const dups = rows.filter(p => cnt[dupKey(p)] > 1).length;
+  return phead("Provider", "Payments", "Every payment from every farm. Delete mistakes here, and export for your accounts.", `${provBack()}<button class="btn" data-act="pay-csv">${ic("down")}Export CSV</button>`) +
+    `<div class="kpis"><div class="kpi"><div class="k">${m === "all" ? "All time" : monLabel(m)}</div><div class="v">${money(sum(rows, "amount"))}</div><div class="s">${rows.length} payment${rows.length === 1 ? "" : "s"}</div></div>
+      <div class="kpi ${dups ? "neg" : ""}"><div class="k">Possible duplicates</div><div class="v">${dups}</div><div class="s">${dups ? "Same farm, day and amount" : "None found"}</div></div></div>
+    <section class="panel"><div class="pfilt"><select class="in" id="pay_m" aria-label="Month"><option value="all" ${m === "all" ? "selected" : ""}>All time</option>${monthKeys(12).reverse().map(k => `<option value="${k}" ${k === m ? "selected" : ""}>${monLabel(k)}</option>`).join("")}</select>
+      <label class="srch">${ic("search")}<input class="in" id="pay_q" placeholder="Search farm or reference" value="${esc(S.payQ || "")}" autocomplete="off" aria-label="Search payments"></label></div>
+      ${rows.length ? `<ul class="fu">${rows.map(p => `<li class="${cnt[dupKey(p)] > 1 ? "warn" : "plain"}"><div class="grow"><b>${esc(p.farm)}</b><span>${fdate(p.date, 1)}${p.at ? " · " + payTime(p.at) : ""} · ${esc(p.method || "")}${p.ref ? " · " + esc(p.ref) : ""}${cnt[dupKey(p)] > 1 ? ` · <em class="dupl">Possible duplicate</em>` : ""}</span></div><b class="tn amt">${money(p.amount)}</b><button class="btn ghost sm icon-btn" data-act="pay-del" data-from="list" data-id="${p.fid}" data-i="${p.idx}" aria-label="Delete payment">${ic("x")}</button></li>`).join("")}</ul>`
+      : emptyState("coin", "No payments", "Nothing recorded for this month or search.")}</section>`;
+};
+PROV.p_renewals = () => {
+  const r = renewalsOf(), row = x => farmRow(x.grp === "overdue" ? "crit" : x.grp === "week" ? "warn" : "info", x.f, money(x.price),
+    `${esc(x.f.plan)} · ${!x.f.paidUntil ? "No payment yet" : x.left < 0 ? `overdue since ${fdate(x.f.paidUntil, 1)}` : x.left === 0 ? "due today" : `due ${fdate(x.f.paidUntil, 1)} · in ${x.left} day${x.left === 1 ? "" : "s"}`}`,
+    `<button class="btn sm" data-act="farm-pay" data-id="${x.f.id}">${ic("coin")}Paid</button>${waBtn(x.f, reminderText(x.f), "Remind")}`);
+  const sm = g => sum(r.filter(x => x.grp === g), "price");
+  return phead("Provider", "Renewals", "Who has to pay next, so no payment slips through.", provBack()) +
+    `<div class="kpis"><div class="kpi ${sm("overdue") ? "neg" : ""}"><div class="k">Overdue</div><div class="v">${money(sm("overdue"))}</div></div><div class="kpi"><div class="k">Due in 7 days</div><div class="v">${money(sm("week"))}</div></div><div class="kpi"><div class="k">Due in 30 days</div><div class="v">${money(sm("month"))}</div></div></div>
+    <section class="panel">${r.length ? group("Overdue", r.filter(x => x.grp === "overdue").map(row)) + group("Due this week", r.filter(x => x.grp === "week").map(row)) + group("Due this month", r.filter(x => x.grp === "month").map(row))
+      : emptyState("check", "Nothing due", "No paid farm renews in the next 30 days.")}</section>`;
+};
+PROV.p_trials = () => {
+  const tr = trialsOf(), row = x => farmRow(x.left < 0 ? "crit" : x.left <= 3 ? "warn" : "info", x.f, x.left < 0 ? "Ended" : `${x.left} day${x.left === 1 ? "" : "s"} left`,
+    `${esc(x.f.owner)} · ${x.left < 0 ? "ended" : "ends"} ${fdate(x.end, 1)} · ${sum(farmUse(x.f).daily || [], v => v)} records in 14 days`,
+    `<button class="btn sm" data-act="farm-pay" data-id="${x.f.id}">${ic("coin")}Convert</button>${callBtn(x.f)}${x.f.phone ? waBtn(x.f, remText(x.f, { days: x.left })) : ""}`);
+  return phead("Provider", "Trials", "Farms on the free trial. Call them before it ends and convert them to paid.", provBack()) +
+    `<div class="kpis"><div class="kpi"><div class="k">On trial</div><div class="v">${tr.filter(x => x.left >= 0).length}</div></div><div class="kpi ${tr.some(x => x.left >= 0 && x.left <= 3) ? "neg" : ""}"><div class="k">Ending in 3 days</div><div class="v">${tr.filter(x => x.left >= 0 && x.left <= 3).length}</div></div><div class="kpi"><div class="k">Ended, not paid</div><div class="v">${tr.filter(x => x.left < 0).length}</div></div></div>
+    <section class="panel">${tr.length ? group("Ending soon", tr.filter(x => x.left >= 0 && x.left <= 3).map(row)) + group("On trial", tr.filter(x => x.left > 3).map(row)) + group("Trial ended", tr.filter(x => x.left < 0).map(row))
+      : emptyState("clock", "No trials", "New farms start a 14-day trial and show up here.")}</section>`;
+};
+PROV.p_reminders = () => {
+  const rs = remindersOf(), sent = remSent(), t = today();
+  const row = x => { const s = sent[x.f.id] && sent[x.f.id].slice(0, 10) === t;
+    return farmRow(s ? "ok" : x.b.k === "overdue" ? "crit" : "warn", x.f, s ? `<span class="chip ok"><span class="dot"></span>Sent ${payTime(sent[x.f.id])}</span>` : "", `${x.b.label}${x.f.phone ? " · " + esc(x.f.phone) : " · no phone number"}`, waBtn(x.f, remText(x.f, x.b), s ? "Send again" : "Send")); };
+  const left = rs.filter(x => x.f.phone && !(sent[x.f.id] && sent[x.f.id].slice(0, 10) === t));
+  return phead("Provider", "Reminders", "WhatsApp a payment reminder to every farm that's due. Tap Send on each one; sent ones are ticked for today.", `${provBack()}${rs.length ? `<button class="btn" data-act="rem-copy-all">${ic("copy")}Copy all</button>` : ""}`) +
+    `<div class="kpis"><div class="kpi"><div class="k">To remind</div><div class="v">${rs.length}</div></div><div class="kpi"><div class="k">Still to send today</div><div class="v">${left.length}</div></div></div>
+    <section class="panel">${rs.length ? `<ul class="fu">${rs.map(row).join("")}</ul>` : emptyState("check", "No reminders needed", "No farm is due, overdue or ending a trial.")}</section>`;
+};
+PROV.p_revenue = () => {
+  const t = today(), pays = allPays(), m = t.slice(0, 7), pm = monthKeys(2)[0];
+  const act = S.allFarms.filter(f => f.status !== "paused"), mrr = sum(act, monthlyValue);
+  const exp = sum(renewalsOf().filter(x => x.left >= 0), "price"), overdue = sum(renewalsOf().filter(x => x.left < 0), "price");
+  const yr = monthKeys(12), byFarm = {}; pays.filter(p => p.date >= yr[0]).forEach(p => byFarm[p.farm] = (byFarm[p.farm] || 0) + Number(p.amount || 0));
+  const top = Object.entries(byFarm).sort((a, b) => b[1] - a[1]).slice(0, 8), mx = top.length ? top[0][1] : 1;
+  return phead("Provider", "Revenue", "What you've collected and what's coming in next.", provBack()) +
+    `<div class="kpis"><div class="kpi pos"><div class="k">Collected in ${MON[+m.slice(5) - 1]}</div><div class="v">${money(sum(pays.filter(p => p.date.startsWith(m)), "amount"))}</div></div>
+      <div class="kpi"><div class="k">Collected in ${MON[+pm.slice(5) - 1]}</div><div class="v">${money(sum(pays.filter(p => p.date.startsWith(pm)), "amount"))}</div></div>
+      <div class="kpi"><div class="k">Monthly income</div><div class="v">${money(Math.round(mrr))}</div><div class="s">from ${act.filter(f => monthlyValue(f)).length} paid farms</div></div>
+      <div class="kpi"><div class="k">Expected in 30 days</div><div class="v">${money(exp)}</div><div class="s">${overdue ? `plus ${money(overdue)} overdue` : "from renewals due"}</div></div></div>
+    <section class="panel"><div class="ph"><div><h2>Last 12 months</h2><p>Payments collected per month</p></div></div>${incomeChart(12)}</section>
+    <section class="panel"><div class="ph"><div><h2>By farm</h2><p>Collected in the last 12 months</p></div></div>
+      ${top.length ? `<div class="bars">${top.map(([n, v]) => `<div><span>${esc(n)}</span><i style="width:${Math.max(3, v / mx * 100)}%"></i><b class="tn">${money(v)}</b></div>`).join("")}</div>` : emptyState("chart", "No payments yet", "Payments you record will show here.")}</section>`;
+};
+PROV.p_activity = () => {
+  const fs = S.allFarms.filter(f => f.status !== "paused").map(f => { const u = farmUse(f); return { f, u, ls: lastSeen(u.lastEntry), n: sum(u.daily || [], v => v), d: u.lastEntry ? dnum(today()) - dnum(u.lastEntry) : 999 }; }).sort((a, b) => a.d - b.d || b.n - a.n);
+  const row = x => farmRow(x.ls.c === "warn" ? "warn" : x.ls.c === "ok" ? "ok" : "info", x.f, "", `Last record: ${x.ls.t} · ${x.n} records in 14 days · ${x.u.ponds ?? "—"} ponds · team ${x.u.team ?? 1}`,
+    `<div class="spark mini">${(x.u.daily || Array(14).fill(0)).map(v => `<i style="height:${Math.max(8, Math.min(100, v * 8))}%" class="${v ? "" : "z"}"></i>`).join("")}</div>${x.ls.c === "warn" ? callBtn(x.f) : `<button class="btn sm ghost" data-act="farm-open" data-id="${x.f.id}">Open</button>`}`);
+  return phead("Provider", "Farm activity", "Which farms use AquaLedger every day and which have gone quiet. A quiet farm often stops paying, so call them early.", provBack()) +
+    `<div class="kpis"><div class="kpi pos"><div class="k">Active in 2 days</div><div class="v">${fs.filter(x => x.d <= 1).length}</div></div><div class="kpi ${fs.some(x => x.ls.c === "warn") ? "neg" : ""}"><div class="k">Quiet 5+ days</div><div class="v">${fs.filter(x => x.ls.c === "warn").length}</div></div><div class="kpi"><div class="k">Records in 14 days</div><div class="v">${sum(fs, "n")}</div></div></div>
+    <section class="panel">${fs.length ? group("Quiet, needs a call", fs.filter(x => x.ls.c === "warn").map(row)) + group("Active", fs.filter(x => x.ls.c !== "warn").map(row)) : emptyState("pulse", "No active farms", "Add a farm to see its activity.")}</section>`;
+};
+document.addEventListener("click", e => {
+  const a = e.target.closest("[data-act]"); if (!a) return;
+  if (a.dataset.act === "rem-sent") { markSent(a.dataset.id); setTimeout(render, 300); }
+  if (a.dataset.act === "pay-csv") {
+    const m = S.payM || today().slice(0, 7), rows = allPays().filter(p => m === "all" || p.date.startsWith(m));
+    save(`AquaLedger_payments_${m}_${today()}.csv`, csvOf({ cols: ["Date", "Time", "Farm", "Amount", "Method", "Reference", "Months"], rows: rows.map(p => [p.date, p.at ? payTime(p.at) : "", p.farm, p.amount, p.method || "", p.ref || "", p.months || ""]) }));
+  }
+  if (a.dataset.act === "rem-copy-all") {
+    const tx = remindersOf().map(x => `${x.f.name}${x.f.phone ? " (" + x.f.phone + ")" : ""}\n${remText(x.f, x.b)}`).join("\n\n");
+    (navigator.clipboard ? navigator.clipboard.writeText(tx) : Promise.reject()).then(() => toast("All reminders copied")).catch(() => toast("Your browser blocked copying here.", true));
+  }
+});
+document.addEventListener("change", e => { if (e.target.id === "pay_m") { S.payM = e.target.value; render(); } });
+document.addEventListener("input", e => { if (e.target.id === "pay_q") { S.payQ = e.target.value; const pos = e.target.selectionStart; render(); const el = $("#pay_q"); if (el) { el.focus(); el.setSelectionRange(pos, pos); } } });
 
 function farmById(id) { return S.allFarms.find(f => f.id === id); }
 function newFarmSheet() {
@@ -2523,7 +2670,7 @@ async function savePayment(form) {
   closeSheet(); toast(`${money(amt)} recorded. ${f.name} paid till ${fdate(until, 1)}.`);
   try { await write; } catch (e) { toast(dbErr(e), true); }
 }
-async function deletePayment(fid, i) {
+async function deletePayment(fid, i, reopen = true) {
   const f = farmById(fid); if (!f) return;
   const list = f.payments || [], p = list[i]; if (!p) return;
   if (!confirm(`Delete the ${money(p.amount)} payment of ${fdate(p.date, 1)}? Access time it added will be taken off too.`)) return;
@@ -2532,7 +2679,7 @@ async function deletePayment(fid, i) {
   const o = { payments };
   if (f.paidUntil) o.paidUntil = addDays(f.paidUntil, -months * 30);
   const write = FDB.doc("farms/" + f.id).set(o, { merge: true });
-  paySheet({ ...f, ...o });
+  if (reopen) paySheet({ ...f, ...o });
   toast(`Payment deleted.${o.paidUntil ? ` ${f.name} now paid till ${fdate(o.paidUntil, 1)}.` : ""}`);
   try { await write; } catch (e) { toast(dbErr(e), true); }
 }
@@ -2550,7 +2697,7 @@ document.addEventListener("click", e => {
     case "farm-edit": if (f) editSheet(f); break;
     case "farm-tab": S.farmTab = a.dataset.f; render(); break;
     case "farm-pay": if (f) paySheet(f); break;
-    case "pay-del": if (f) deletePayment(f.id, +a.dataset.i); break;
+    case "pay-del": if (f) deletePayment(f.id, +a.dataset.i, a.dataset.from !== "list"); break;
     case "farm-remind": if (f) remindSheet(f); break;
     case "farm-more": if (f) farmMore(f); break;
     case "farm-call": if (f) { closeSheet(); toast(f.phone ? `Calling ${f.phone}` : "Add the owner's phone number first."); } break;
