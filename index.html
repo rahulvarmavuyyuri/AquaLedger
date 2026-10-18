@@ -518,6 +518,13 @@ body.gate .app{grid-template-columns:minmax(0,1fr)}
   *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
   .anim .ln{stroke-dashoffset:0}
 }
+.tk-r{display:flex;align-items:flex-start;gap:8px;flex:none}
+.tstat{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+.tstat i{width:8px;height:8px;border-radius:50%;background:currentColor}
+.tstat.on{color:#5fd69a;background:rgba(95,214,154,.12);border:1px solid rgba(95,214,154,.35)}
+.tstat.on i{box-shadow:0 0 0 3px rgba(95,214,154,.18)}
+.tstat.off{color:#ff6f6f;background:rgba(255,111,111,.12);border:1px solid rgba(255,111,111,.4)}
+.tank.inactive .tstat{opacity:1}
 </style>
 </head>
 <body>
@@ -1385,7 +1392,7 @@ function tankCard(t) {
   return `<a class="tank ${t.status === "Inactive" ? "inactive" : ""}" href="#tank-${t.id}">
     <div class="water" style="height:${fill}%">${c.current ? `<span class="swimmer ${t.species === "Fish" ? "fish" : "shrimp"}" style="animation-delay:-${(t.code || "").length * 2.3 % 9}s"><svg viewBox="${t.species === "Fish" ? CVB.fish : CVB.shrimp}" aria-hidden="true"><use href="#c-${t.species === "Fish" ? "fish" : "shrimp"}"/></svg></span>` : ""}</div>
     <div class="tank-h"><div><span class="tcode">${esc(t.code)}</span><h3 style="margin-top:8px">${esc(t.name)}</h3><div class="loc">${esc(t.location || "")}${t.capacity ? ` · ${nfx(t.capacity)} ${esc(t.capUnit || "")}` : ""}</div></div>
-      ${spIcon(t.species)}</div>
+      <div class="tk-r"><span class="tstat ${t.status === "Inactive" ? "off" : "on"}"><i></i>${t.status === "Inactive" ? "Inactive" : "Active"}</span>${spIcon(t.species)}</div></div>
     <div class="tank-n">${c.current ? `<span class="v">${cc.n}</span><span class="u">${cc.u ? cc.u + " " : ""}live${c.stocked ? ` · ${nfx(c.survival * 100, 1)}% survival` : ""}</span>` : `<span class="v" style="font-size:20px;color:var(--muted)">${c.stocked || cycles(t.id).length > 1 ? "Harvested · ready to restock" : "Not stocked"}</span>`}</div>
     <div class="tank-m"><div>DOC<b>${c.doc != null && c.current ? c.doc + " d" : "—"}</b></div><div>Feed today<b>${nfx(fToday, 1)} kg</b></div><div>Cycle feed<b>${nfx(c.feedKg, 0)} kg</b></div></div>
     <div class="params">${w ? ["ph", "do", "temp", "ammonia"].map(p => `<span class="param ${wStatus(p, Number(w[p]))}"><i></i>${p === "do" ? "DO" : p === "ph" ? "pH" : p === "temp" ? "°C" : "NH₃"} <b>${w[p] === "" || w[p] == null ? "—" : nfx(w[p], TH[p].dp)}</b></span>`).join("") : `<span class="param">No water readings yet</span>`}</div>
