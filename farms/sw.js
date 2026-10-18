@@ -1,7 +1,7 @@
 // AquaLedger Farms service worker (scope: /farms/): lets the app open on poor farm connections.
 // Pages from this site load network-first (so updates arrive), falling back to the cached copy offline.
 // Libraries and fonts are cached after first use. Database and sign-in traffic is never cached.
-const CACHE = "aqualedger-farms-v15";
+const CACHE = "aqualedger-farms-v16";
 const SHELL = [
   "./", "./index.html", "./firebase-config.js", "./manifest.webmanifest",
   "../icons/icon.svg", "../icons/icon-192.png", "../icons/icon-512.png"

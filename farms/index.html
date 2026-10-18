@@ -2350,7 +2350,7 @@ function lastSeen(d) {
   return n <= 0 ? { t: "Today", c: "ok" } : n === 1 ? { t: "Yesterday", c: "ok" } : { t: `${n} days ago`, c: n >= 5 ? "warn" : "" };
 }
 const monthlyValue = f => { const i = PLAN_INFO[f.plan]; if (!i || !i.months || f.status === "paused") return 0; return (f.price ?? i.price) / i.months; };
-function farmPayments() { const out = []; S.allFarms.forEach(f => (f.payments || []).forEach(p => out.push({ ...p, farm: f.name, fid: f.id }))); return out.sort((a, b) => b.date.localeCompare(a.date)); }
+function farmPayments() { const out = []; S.allFarms.forEach(f => (f.payments || []).forEach(p => out.push({ ...p, farm: f.name, fid: f.id }))); return out.sort((a, b) => b.date.localeCompare(a.date) || (b.at || "").localeCompare(a.at || "")); }
 
 function followUps(farms) {
   const out = [];
@@ -2408,7 +2408,7 @@ VIEWS.admin = () => {
           ${x.act === "pay" ? `<button class="btn sm" data-act="farm-pay" data-id="${x.f.id}">${ic("coin")}Record payment</button>` : x.act === "remind" ? `<button class="btn sm" data-act="farm-remind" data-id="${x.f.id}">${ic("msg")}Reminder</button>` : `<button class="btn sm" data-act="farm-call" data-id="${x.f.id}">${ic("phone")}Call</button>`}</li>`).join("")}</ul>`
         : emptyState("check", "Nothing to chase", "Every farm is paid up and logging records.")}</section>
       <section class="panel"><div class="ph"><div><h2>Payments received</h2><p>Last 6 months, all farms</p></div></div>${incomeChart()}
-        <div class="recent">${pays.slice(0, 3).map(p => `<div><span>${esc(p.farm)}</span><span class="sub">${fdate(p.date)} · ${esc(p.method || "")}</span><b class="tn">${money(p.amount)}</b></div>`).join("")}</div></section>
+        <div class="recent">${pays.slice(0, 3).map(p => `<div><span>${esc(p.farm)}</span><span class="sub">${fdate(p.date)}${p.at ? ` · <span class="tn">${payTime(p.at)}</span>` : ""} · ${esc(p.method || "")}</span><b class="tn">${money(p.amount)}</b></div>`).join("")}</div></section>
     </div>
     <section class="panel"><div class="ph"><div><h2>Client farms</h2><p>Sorted with what needs action first. Open a farm to view or support it.</p></div>
       <label class="srch">${ic("search")}<input class="in" id="farm_q" placeholder="Search farm, owner, phone" value="${esc(S.farmQ || "")}" autocomplete="off" aria-label="Search farms"></label></div>
