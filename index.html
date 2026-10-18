@@ -1851,6 +1851,38 @@ function sampleData() {
   out.harvest.push({ date: D(-30), _tank: "T-04", type: "Final", qty: 5200, avgWeight: 22, count: Math.round(5200000 / 22), price: 380, buyer: "Devi Seafoods", remarks: "Count 45" });
   out.harvest.push({ date: D(-6), _tank: "P-01", type: "Partial", qty: 1100, avgWeight: 350, count: Math.round(1100000 / 350), price: 130, buyer: "Local market", remarks: "" });
   [[-45, "", "Power / aeration", 38000], [-15, "", "Power / aeration", 41500], [-40, "", "Labour", 60000], [-10, "", "Labour", 60000], [-20, "T-03", "Pond preparation", 15000], [-12, "T-01", "Lab testing", 2500], [-12, "T-02", "Lab testing", 2500], [-30, "T-04", "Transport", 9000]].forEach(([d, tk, category, amount]) => out.expenses.push({ date: D(d), _tank: tk, category, amount, remarks: "" }));
+  // Past crop cycles: each ends with a final harvest, so the tank history, reports and profit show earlier crops.
+  const PAST = [
+    // tank, stocked (days ago), days of culture, seed, seed type, supplier, survival, final weight g, FCR, price/kg, buyer
+    ["T-01", -300, 118, 300000, "L. vannamei PL-12", "Coastal Hatchery, Nellore", .82, 24, 1.32, 395, "Devi Seafoods"],
+    ["T-01", -175, 100, 280000, "L. vannamei PL-12", "Sea Pearl Hatchery", .78, 21, 1.38, 360, "Avanti Exports"],
+    ["T-02", -205, 120, 280000, "L. vannamei PL-12", "Sea Pearl Hatchery", .74, 26, 1.41, 410, "Devi Seafoods"],
+    ["T-04", -340, 115, 320000, "L. vannamei PL-12", "Coastal Hatchery, Nellore", .69, 20, 1.52, 345, "Local processor"],
+    ["P-01", -420, 300, 6000, "Tilapia fingerlings", "Godavari Fish Seed Farm", .9, 520, 1.6, 125, "Local market"],
+  ];
+  PAST.forEach(([tk, st, days, qty, seedType, supplier, surv, wt, fcr, price, buyer], ci) => {
+    const fish = tk === "P-01", end = st + days, alive = Math.round(qty * surv), kg = Math.round(alive * wt / 1000);
+    const feedKg = Math.round(kg * fcr), weeks = Math.floor((days - 4) / 7) + 1, ft = fish ? "Fish pellet 28%" : "Grower feed 35% protein";
+    out.stocking.push({ date: D(st), _tank: tk, seedType, qty, supplier, avgSize: fish ? "5 g" : "PL-12", cost: fish ? qty * 3 : qty * .4, remarks: "Earlier crop" });
+    out.purchases.push({ date: D(st - 3), _item: ft, qty: feedKg, cost: feedKg * (fish ? 47 : 93), supplier: fish ? "Godavari Agro" : "Coastal Feeds, Bhimavaram", remarks: "For crop " + (ci + 1) });
+    out.purchases.push(fish ? { date: D(st - 2), _item: "Vitamin C premix", qty: 20, cost: 18000, supplier: "AquaBio Labs", remarks: "" } : { date: D(st - 2), _item: "Probiotic (Bacillus blend)", qty: 8, cost: 14400, supplier: "AquaBio Labs", remarks: "" });
+    if (!fish) out.purchases.push({ date: D(st - 8), _item: "Dolomite lime", qty: 200, cost: 2400, supplier: "Godavari Agro", remarks: "" });
+    const ramp = Array.from({ length: weeks }, (_, k) => Math.pow(k + 1, 1.35)), rs = ramp.reduce((a, b) => a + b, 0);
+    ramp.forEach((r, k) => { const d = st + 3 + k * 7; if (d < end) out.feed.push({ date: D(d), time: "18:00", _tank: tk, feedType: ft, qty: +(feedKg * r / rs).toFixed(1), remarks: "Weekly total" }); });
+    for (let d = st + 4; d < end; d += 7) out.water.push({ date: D(d), time: "06:30", _tank: tk, ph: +j(7.6, 8.3).toFixed(2), temp: +j(26.5, 31).toFixed(1), do: +j(4.3, 6.3).toFixed(1), salinity: +(fish ? j(9, 13) : j(13, 20)).toFixed(1), ammonia: +j(.01, .09).toFixed(2), remarks: "" });
+    const lost = (qty - alive) - (fish ? 0 : 0);
+    const md = []; for (let d = st + 6; d < end - 2; d += fish ? 25 : 9) md.push(d);
+    let left = lost; md.forEach((d, k) => { const n = k === md.length - 1 ? left : Math.round(lost / md.length * j(.6, 1.4)); left -= n; if (n > 0) out.mortality.push({ date: D(d), _tank: tk, dead: n, reason: ["Molting stress", "Unknown", "Low DO", "White feces"][Math.floor(j(0, 4))], remarks: "" }); });
+    [st + 20, st + 45, st + 70].filter(d => d < end).forEach(d => out.medication.push({ date: D(d), _tank: tk, name: fish ? "Vitamin C premix" : "Probiotic (Bacillus blend)", qty: fish ? 6 : 2, unit: "kg", purpose: fish ? "Disease prevention" : "Probiotic", appliedBy: "Ramesh", withdrawal: 0, remarks: "" }));
+    if (!fish) out.medication.push({ date: D(st - 5), _tank: tk, name: "Dolomite lime", qty: 150, unit: "kg", purpose: "Pond preparation", appliedBy: "Suresh", withdrawal: 0, remarks: "Before stocking" });
+    const part = fish ? Math.round(kg * .3) : Math.round(kg * .25), pw = fish ? Math.round(wt * .65) : Math.round(wt * .75);
+    out.harvest.push({ date: D(end - (fish ? 90 : 15)), _tank: tk, type: "Partial", qty: part, avgWeight: pw, count: Math.round(part * 1000 / pw), price: Math.round(price * .9), buyer, remarks: "Thinning harvest" });
+    const fkg = kg - part, fcnt = Math.max(0, alive - Math.round(part * 1000 / pw));
+    out.harvest.push({ date: D(end), _tank: tk, type: "Final", qty: fkg, avgWeight: wt, count: fcnt, price, buyer, remarks: fish ? "" : "Count " + Math.round(1000 / wt) });
+    out.expenses.push({ date: D(st + 30), _tank: tk, category: "Power / aeration", amount: fish ? 22000 : 46000, remarks: "Crop " + (ci + 1) });
+    out.expenses.push({ date: D(st - 7), _tank: tk, category: "Pond preparation", amount: fish ? 9000 : 18000, remarks: "" });
+    out.expenses.push({ date: D(end), _tank: tk, category: "Harvest labour", amount: fish ? 7000 : 15000, remarks: "" });
+  });
   return out;
 }
 async function loadSample() {
