@@ -2460,8 +2460,9 @@ function paySheet(f) {
     <div class="preview" id="pf_prev"><span>Access will run until <b>${fdate(addDays(from, pi.months * 30), 1)}</b>${f.status === "paused" ? " and the farm will be resumed" : ""}.</span></div>
     <div class="sh-f"><button type="button" class="btn ghost" data-act="close">Cancel</button><button class="btn pri" type="submit">${ic("check")}Save payment</button></div>
   </form>
-  ${(f.payments || []).length ? `<div class="hist"><h3>Earlier payments</h3>${f.payments.map((p, i) => ({ p, i })).reverse().slice(0, 6).map(({ p, i }) => `<div><span class="tn">${fdate(p.date, 1)}</span><span class="sub">${esc(p.method)}</span><b class="tn">${money(p.amount)}</b><button type="button" class="btn ghost sm icon-btn pay-del" data-act="pay-del" data-id="${f.id}" data-i="${i}" aria-label="Delete this payment">${ic("x")}</button></div>`).join("")}</div>` : ""}`);
+  ${(f.payments || []).length ? `<div class="hist"><h3>Earlier payments</h3>${f.payments.map((p, i) => ({ p, i })).reverse().slice(0, 6).map(({ p, i }) => `<div><span class="tn">${fdate(p.date, 1)}</span><span class="sub">${esc(p.method)}${p.at ? ` · <span class="tn">${payTime(p.at)}</span>` : ""}</span><b class="tn">${money(p.amount)}</b><button type="button" class="btn ghost sm icon-btn pay-del" data-act="pay-del" data-id="${f.id}" data-i="${i}" aria-label="Delete this payment">${ic("x")}</button></div>`).join("")}</div>` : ""}`);
 }
+function payTime(iso) { const d = new Date(iso); return isNaN(d) ? "" : d.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", hour12: true }); }
 function reminderText(f) {
   const b = billing(f), pi = PLAN_INFO[f.plan] || PLAN_INFO.Monthly;
   return `Hello, this is a reminder from AquaLedger. ${f.name}'s ${f.plan.toLowerCase()} plan of ${money(f.price ?? pi.price)} is ${b.k === "overdue" ? "overdue since " + fdate(f.paidUntil) : "due on " + fdate(f.paidUntil)}. ${S.provSettings && S.provSettings.upi ? `You can pay by UPI to ${S.provSettings.upi}. ` : ""}Thank you.`;
@@ -2514,7 +2515,7 @@ async function savePayment(form) {
   const amt = Number(String($("#pf_amt").value).replace(/[^\d.]/g, "")), plan = $("#pf_plan").value, pi = PLAN_INFO[plan];
   if (!(amt > 0)) { toast("Enter the amount received.", true); $("#pf_amt").focus(); return; }
   const from = f.paidUntil && f.paidUntil >= today() ? f.paidUntil : today(), until = addDays(from, pi.months * 30);
-  const payments = (f.payments || []).concat([{ id: pid || uid(), date: $("#pf_date").value || today(), amount: amt, method: $("#pf_method").value, ref: $("#pf_ref").value.trim(), months: pi.months, by: S.uid }]);
+  const payments = (f.payments || []).concat([{ id: pid || uid(), at: new Date().toISOString(), date: $("#pf_date").value || today(), amount: amt, method: $("#pf_method").value, ref: $("#pf_ref").value.trim(), months: pi.months, by: S.uid }]);
   form.dataset.busy = "1";
   const btn = form.querySelector('button[type="submit"]'); if (btn) { btn.disabled = true; btn.textContent = "Saving…"; }
   // Close straight away: on a weak connection the write is queued and the server can take a while to confirm it.
