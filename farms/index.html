@@ -574,7 +574,10 @@ svg.inc{width:100%;height:auto;display:block}
 .sh-f{display:flex;justify-content:flex-end;gap:8px;margin-top:4px;flex-wrap:wrap}
 .hist{margin-top:16px;border-top:1px solid var(--line-soft);padding-top:12px}
 .hist h3{font-size:13px;color:var(--muted);margin:0 0 6px;font-weight:600}
-.hist div{display:grid;grid-template-columns:auto 1fr auto;gap:12px;padding:6px 0;font-size:13.5px}
+.hist div{display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;padding:6px 0;font-size:13.5px}
+.hist .pay-del{height:30px;width:30px;padding:0;color:var(--muted)}
+.hist .pay-del:hover{color:var(--crit)}
+.btn:disabled{opacity:.6;pointer-events:none}
 .menu-list{display:flex;flex-direction:column;gap:6px}
 .menu-list button{display:flex;align-items:center;gap:10px;height:48px;padding:0 14px;border-radius:12px;border:1px solid var(--line-soft);background:rgba(3,17,27,.45);font-weight:600;text-align:left;color:var(--fg)}
 .menu-list button.danger{color:var(--crit)}
@@ -2448,7 +2451,7 @@ function paySheet(f) {
   const info = PLAN_INFO[f.plan] || PLAN_INFO.Monthly, plan = f.plan === "Trial" ? "Monthly" : f.plan, pi = PLAN_INFO[plan];
   const from = f.paidUntil && f.paidUntil >= today() ? f.paidUntil : today();
   openSheet(`<div class="sh-h"><div><span class="eyebrow">${esc(f.name)}</span><h2>Record payment</h2></div><button class="btn ghost sm" data-act="close">${ic("x")}</button></div>
-  <form id="payform" class="form" data-id="${f.id}" novalidate>
+  <form id="payform" class="form" data-id="${f.id}" data-pid="${uid()}" novalidate>
     <div class="grid2"><div class="fld"><label for="pf_plan">Plan</label><select class="in" id="pf_plan">${["Monthly", "Yearly"].map(p => `<option ${p === plan ? "selected" : ""}>${p}</option>`).join("")}</select></div>
     <div class="fld"><label for="pf_amt">Amount received <span class="req">*</span></label><input class="in" id="pf_amt" inputmode="numeric" value="${f.price ?? pi.price}"></div></div>
     <div class="grid2"><div class="fld"><label for="pf_method">Paid by</label><select class="in" id="pf_method">${PAY_METHODS.map(m => `<option>${m}</option>`).join("")}</select></div>
@@ -2457,7 +2460,7 @@ function paySheet(f) {
     <div class="preview" id="pf_prev"><span>Access will run until <b>${fdate(addDays(from, pi.months * 30), 1)}</b>${f.status === "paused" ? " and the farm will be resumed" : ""}.</span></div>
     <div class="sh-f"><button type="button" class="btn ghost" data-act="close">Cancel</button><button class="btn pri" type="submit">${ic("check")}Save payment</button></div>
   </form>
-  ${(f.payments || []).length ? `<div class="hist"><h3>Earlier payments</h3>${f.payments.slice().reverse().slice(0, 4).map(p => `<div><span class="tn">${fdate(p.date, 1)}</span><span class="sub">${esc(p.method)}</span><b class="tn">${money(p.amount)}</b></div>`).join("")}</div>` : ""}`);
+  ${(f.payments || []).length ? `<div class="hist"><h3>Earlier payments</h3>${f.payments.map((p, i) => ({ p, i })).reverse().slice(0, 6).map(({ p, i }) => `<div><span class="tn">${fdate(p.date, 1)}</span><span class="sub">${esc(p.method)}</span><b class="tn">${money(p.amount)}</b><button type="button" class="btn ghost sm icon-btn pay-del" data-act="pay-del" data-id="${f.id}" data-i="${i}" aria-label="Delete this payment">${ic("x")}</button></div>`).join("")}</div>` : ""}`);
 }
 function reminderText(f) {
   const b = billing(f), pi = PLAN_INFO[f.plan] || PLAN_INFO.Monthly;
@@ -2502,13 +2505,35 @@ function editSheet(f) {
   </form>`);
 }
 async function savePayment(form) {
+  // A double tap must never record the same payment twice: lock the form while saving,
+  // and tag the payment with an id made when the sheet opened, so a repeat save is ignored.
+  if (form.dataset.busy) return;
   const f = farmById(form.dataset.id); if (!f) return;
+  const pid = form.dataset.pid;
+  if (pid && (f.payments || []).some(p => p.id === pid)) { closeSheet(); return; }
   const amt = Number(String($("#pf_amt").value).replace(/[^\d.]/g, "")), plan = $("#pf_plan").value, pi = PLAN_INFO[plan];
   if (!(amt > 0)) { toast("Enter the amount received.", true); $("#pf_amt").focus(); return; }
   const from = f.paidUntil && f.paidUntil >= today() ? f.paidUntil : today(), until = addDays(from, pi.months * 30);
-  const payments = (f.payments || []).concat([{ date: $("#pf_date").value || today(), amount: amt, method: $("#pf_method").value, ref: $("#pf_ref").value.trim(), months: pi.months, by: S.uid }]);
-  try { await FDB.doc("farms/" + f.id).set({ plan, paidUntil: until, payments, status: "active" }, { merge: true }); closeSheet(); toast(`${money(amt)} recorded. ${f.name} paid till ${fdate(until, 1)}.`); }
-  catch (e) { toast(dbErr(e), true); }
+  const payments = (f.payments || []).concat([{ id: pid || uid(), date: $("#pf_date").value || today(), amount: amt, method: $("#pf_method").value, ref: $("#pf_ref").value.trim(), months: pi.months, by: S.uid }]);
+  form.dataset.busy = "1";
+  const btn = form.querySelector('button[type="submit"]'); if (btn) { btn.disabled = true; btn.textContent = "Saving…"; }
+  // Close straight away: on a weak connection the write is queued and the server can take a while to confirm it.
+  const write = FDB.doc("farms/" + f.id).set({ plan, paidUntil: until, payments, status: "active" }, { merge: true });
+  closeSheet(); toast(`${money(amt)} recorded. ${f.name} paid till ${fdate(until, 1)}.`);
+  try { await write; } catch (e) { toast(dbErr(e), true); }
+}
+async function deletePayment(fid, i) {
+  const f = farmById(fid); if (!f) return;
+  const list = f.payments || [], p = list[i]; if (!p) return;
+  if (!confirm(`Delete the ${money(p.amount)} payment of ${fdate(p.date, 1)}? Access time it added will be taken off too.`)) return;
+  const payments = list.filter((_, k) => k !== i);
+  const months = p.months || (PLAN_INFO[f.plan] || PLAN_INFO.Monthly).months || 1;
+  const o = { payments };
+  if (f.paidUntil) o.paidUntil = addDays(f.paidUntil, -months * 30);
+  const write = FDB.doc("farms/" + f.id).set(o, { merge: true });
+  paySheet({ ...f, ...o });
+  toast(`Payment deleted.${o.paidUntil ? ` ${f.name} now paid till ${fdate(o.paidUntil, 1)}.` : ""}`);
+  try { await write; } catch (e) { toast(dbErr(e), true); }
 }
 document.addEventListener("click", e => {
   const a = e.target.closest("[data-act]"); if (!a) return;
@@ -2524,6 +2549,7 @@ document.addEventListener("click", e => {
     case "farm-edit": if (f) editSheet(f); break;
     case "farm-tab": S.farmTab = a.dataset.f; render(); break;
     case "farm-pay": if (f) paySheet(f); break;
+    case "pay-del": if (f) deletePayment(f.id, +a.dataset.i); break;
     case "farm-remind": if (f) remindSheet(f); break;
     case "farm-more": if (f) farmMore(f); break;
     case "farm-call": if (f) { closeSheet(); toast(f.phone ? `Calling ${f.phone}` : "Add the owner's phone number first."); } break;
