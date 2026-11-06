@@ -530,6 +530,42 @@ body.gate .app{grid-template-columns:minmax(0,1fr)}
 .sheet .grab{display:block;width:56px;height:5px;border:0;padding:0;border-radius:4px;background:var(--line);margin:4px auto 10px;cursor:pointer}
 .sheet .grab::before{content:"";display:block;margin:-14px -20px;height:33px}
 .sheet .sh-x{position:absolute;right:0;top:4px;width:36px;height:36px;padding:0}
+.ckp .ph{align-items:center}
+.ckbar{height:6px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden;margin:-4px 0 14px}
+.ckbar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),#5fd69a)}
+.cktab{display:flex;flex-direction:column;gap:6px}
+.ckh,.ckr{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(3,minmax(0,1fr));gap:8px;align-items:center}
+.ckh{font-size:12px;color:var(--muted);padding:0 8px}
+.ckr{padding:8px;border-radius:12px;background:rgba(3,17,27,.45);border:1px solid var(--line-soft)}
+.ckt{display:flex;align-items:center;gap:10px;color:var(--fg);text-decoration:none;min-width:0}
+.ckt .sp{width:34px;height:34px;flex:none}
+.ckt>span{display:flex;flex-direction:column;min-width:0}.ckt b{font-size:13.5px}
+.ckt .sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ck{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 10px;border-radius:10px;font-size:12.5px;font-weight:600;white-space:nowrap;max-width:100%;overflow:hidden}
+.ck .i{width:15px;height:15px;flex:none}
+.ck.done{color:#5fd69a;background:rgba(95,214,154,.1);border:1px solid rgba(95,214,154,.25)}
+.ck.todo{color:var(--warn);background:rgba(242,196,109,.08);border:1px dashed rgba(242,196,109,.45);cursor:pointer}
+button.ck.todo:hover{background:rgba(242,196,109,.15)}
+.bfl{display:flex;flex-direction:column;gap:8px}
+.bfr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) 104px;gap:8px;align-items:center;padding:8px;border-radius:12px;background:rgba(3,17,27,.45);border:1px solid var(--line-soft)}
+.bft{display:flex;align-items:center;gap:8px;min-width:0}.bft .sp{width:30px;height:30px;flex:none}
+.bft>span{display:flex;flex-direction:column;min-width:0}.bft .sub{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bfq{position:relative;display:block}.bfq .in{padding-right:30px;font-size:16px;font-weight:650;text-align:right}
+.bfq span{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted)}
+html[data-text="large"] body{zoom:1.12}
+html[data-text="xl"] body{zoom:1.25}
+@media (max-width:720px){
+  .ckh{display:none}
+  .ckr{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .ckt{grid-column:1/-1}
+  .ckc{display:flex;flex-direction:column;gap:4px;min-width:0}
+  .ckc::before{content:attr(data-l);font-size:11px;color:var(--muted)}
+  .ck{width:100%;justify-content:center;padding:0 6px}
+  .ck .tm{display:none}
+  .bfr{grid-template-columns:minmax(0,1fr) 96px}
+  .bfr .bf_type{grid-column:1/-1;grid-row:2}
+}
+.ck .tm{font-style:normal;opacity:.75}
 </style>
 </head>
 <body>
@@ -2193,6 +2229,84 @@ async function boot() {
   db.doc("config/settings").onSnapshot(s => { S.settings = s.exists ? { ...s.data() } : {}; done("settings"); }, () => done("settings"));
   setTimeout(() => { if (S.mode === "loading") { S.mode = "db"; S.lastKey = ""; render(); } }, 8000);
 }
+/* ===== Friendly options: today's checklist, log feed for all ponds, larger text ===== */
+const CK = [["am", "Morning feed", "feed"], ["pm", "Evening feed", "feed"], ["water", "Water reading", "water"]];
+function checklistState() {
+  const t0 = today(), rows = tanksSorted().filter(t => t.status !== "Inactive");
+  return rows.map(t => {
+    const fd = S.feed.filter(f => f.tankId === t.id && f.date === t0), wd = S.water.filter(w => w.tankId === t.id && w.date === t0);
+    const am = fd.find(f => (f.time || "00:00") < "12:00"), pm = fd.find(f => (f.time || "00:00") >= "12:00"), w = wd[0];
+    return { t, am, pm, water: w };
+  });
+}
+function checklistHTML() {
+  if (!S.tanks.length) return "";
+  const rows = checklistState(), total = rows.length * 3, done = sum(rows, r => (r.am ? 1 : 0) + (r.pm ? 1 : 0) + (r.water ? 1 : 0));
+  if (!rows.length) return "";
+  const pct = Math.round(done / total * 100);
+  const cell = (r, k, mod) => {
+    const rec = r[k];
+    if (rec) return `<span class="ck done" title="Done">${ic("check")}<span>${mod === "feed" ? nfx(rec.qty, 1) + " kg" : "DO " + nfx(rec.do, 1)}${rec.time ? `<em class="tm"> · ${esc(rec.time)}</em>` : ""}</span></span>`;
+    return S.canWrite ? `<button class="ck todo" data-act="ck-add" data-mod="${mod}" data-tank="${r.t.id}" data-time="${k === "am" ? "07:00" : k === "pm" ? "17:30" : "06:30"}">${ic("plus")}<span>Add</span></button>` : `<span class="ck todo">Not yet</span>`;
+  };
+  return `<section class="panel ckp"><div class="ph"><div><h2>Today's checklist</h2><p>${done === total ? "Everything is logged for today. Well done." : `${done} of ${total} done · tap Add to log what's missing`}</p></div>
+    ${S.canWrite ? `<button class="btn pri sm" data-act="bulk-feed">${ic("feed")}Log feed for all ponds</button>` : ""}</div>
+    <div class="ckbar"><i style="width:${pct}%"></i></div>
+    <div class="cktab"><div class="ckh"><span>Tank</span>${CK.map(c => `<span>${c[1]}</span>`).join("")}</div>
+    ${rows.map(r => `<div class="ckr"><a href="#tank-${r.t.id}" class="ckt">${spIcon(r.t.species)}<span><b>${esc(r.t.code)}</b><span class="sub">${esc(r.t.name)}</span></span></a>${CK.map(([k, , mod]) => `<div class="ckc" data-l="${k === "am" ? "Morning feed" : k === "pm" ? "Evening feed" : "Water"}">${cell(r, k, mod)}</div>`).join("")}</div>`).join("")}</div></section>`;
+}
+const _dash = VIEWS.dashboard;
+VIEWS.dashboard = () => {
+  const h = _dash(), i = h.indexOf('<section class="hero"');
+  if (i < 0 || !S.tanks.length) return h;
+  const j = h.indexOf("</section>", i) + 10;
+  return h.slice(0, j) + checklistHTML() + h.slice(j);
+};
+function bulkFeedSheet() {
+  const rows = tanksSorted().filter(t => t.status !== "Inactive"), t0 = today(), st = checklistState();
+  const slot = st.some(r => !r.am) ? "am" : "pm", done = new Set(st.filter(r => r[slot]).map(r => r.t.id));
+  const items = S.items.filter(x => x.category === "Feed").map(x => x.name);
+  openSheet(`<div class="sh-h"><div><span class="eyebrow">Feed</span><h2>Log feed for all ponds</h2></div><button class="btn ghost sm" data-act="close">${ic("x")}</button></div>
+  <form id="bulkfeed" class="form" novalidate>
+    <div class="grid2"><div class="fld"><label for="bf_date">Date</label><input class="in" type="date" id="bf_date" value="${t0}"></div>
+    <div class="fld"><label for="bf_time">Time</label><input class="in" type="time" id="bf_time" value="${slot === "am" ? "07:00" : "17:30"}"></div></div>
+    <p class="sub">For the ${slot === "am" ? "morning" : "evening"} feeding. Amounts come from each pond's last feeding; change any number, or clear it to skip that pond.</p>
+    <div class="bfl">${rows.map(t => { const last = S.feed.filter(f => f.tankId === t.id).sort(byDateDesc)[0];
+      return `<div class="bfr" data-tank="${t.id}"><div class="bft">${spIcon(t.species)}<span><b>${esc(t.code)}</b><span class="sub">${done.has(t.id) ? "Already logged" : esc(t.name)}</span></span></div>
+        <select class="in bf_type" aria-label="Feed type for ${esc(t.code)}">${[...new Set([last && last.feedType, ...items].filter(Boolean))].map(n => `<option ${last && last.feedType === n ? "selected" : ""}>${esc(n)}</option>`).join("")}</select>
+        <label class="bfq"><input class="in bf_qty" inputmode="decimal" value="${last && !done.has(t.id) ? last.qty : ""}" placeholder="0" aria-label="Kg for ${esc(t.code)}"><span>kg</span></label></div>`; }).join("")}</div>
+    <div class="sh-f"><button type="button" class="btn ghost" data-act="close">Cancel</button><button class="btn pri" type="submit" id="bf_save">${ic("check")}Save all</button></div>
+  </form>`);
+  bfTotal();
+}
+function bfTotal() { const b = $("#bf_save"); if (!b) return; const n = $$(".bf_qty").filter(x => Number(x.value) > 0); b.innerHTML = `${ic("check")}Save ${n.length} feeding${n.length === 1 ? "" : "s"} · ${nfx(sum(n, x => Number(x.value)), 1)} kg`; }
+async function saveBulkFeed() {
+  const date = $("#bf_date").value || today(), time = $("#bf_time").value || nowTime();
+  const recs = $$(".bfr").map(r => ({ tankId: r.dataset.tank, feedType: r.querySelector(".bf_type").value, qty: Number(r.querySelector(".bf_qty").value) })).filter(x => x.qty > 0 && x.feedType);
+  if (!recs.length) { toast("Enter at least one amount.", true); return; }
+  for (const r of recs) await store.add("feed", { date, time, ...r, remarks: "" });
+  closeSheet(); toast(`Saved feeding for ${recs.length} pond${recs.length === 1 ? "" : "s"}`);
+}
+/* Larger text, remembered on this phone */
+function applyTextSize() { let v = "normal"; try { v = localStorage.getItem("al:text") || "normal"; } catch (e) {} document.documentElement.dataset.text = v; }
+applyTextSize();
+const _settings = VIEWS.settings;
+VIEWS.settings = () => {
+  const h = _settings(), cur = document.documentElement.dataset.text || "normal";
+  const panel = `<section class="panel"><div class="ph"><div><h2>Text size</h2><p>Make words and numbers bigger on this phone. Each person can choose their own.</p></div></div>
+    <div class="tabs" role="tablist">${[["normal", "Normal"], ["large", "Large"], ["xl", "Extra large"]].map(([k, l]) => `<button role="tab" class="${cur === k ? "on" : ""}" aria-selected="${cur === k}" data-act="textsize" data-v="${k}">${l}</button>`).join("")}</div></section>`;
+  const i = h.indexOf('<section class="panel');
+  return i < 0 ? h + panel : h.slice(0, i) + panel + h.slice(i);
+};
+document.addEventListener("click", e => {
+  const a = e.target.closest("[data-act]"); if (!a) return;
+  if (a.dataset.act === "ck-add") openForm(a.dataset.mod, null, { tankId: a.dataset.tank, time: a.dataset.time });
+  if (a.dataset.act === "bulk-feed") bulkFeedSheet();
+  if (a.dataset.act === "textsize") { try { localStorage.setItem("al:text", a.dataset.v); } catch (e) {} applyTextSize(); render(); }
+});
+document.addEventListener("input", e => { if (e.target.classList && e.target.classList.contains("bf_qty")) bfTotal(); });
+document.addEventListener("submit", e => { if (e.target.id === "bulkfeed") { e.preventDefault(); e.stopPropagation(); saveBulkFeed(); } }, true);
+
 boot();
 })();
 </script>
