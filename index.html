@@ -479,6 +479,7 @@ body.gate .app{grid-template-columns:minmax(0,1fr)}
 .tank .water{container-type:inline-size}
 .swimmer{position:absolute;left:8px;bottom:8px;width:40px;opacity:.85;will-change:transform;animation:pace 16s ease-in-out infinite;filter:drop-shadow(0 4px 6px rgba(0,0,0,.35))}
 .swimmer.shrimp{width:50px}
+.swimmer.fish{width:54px;--fish:url(#gGold);--fin:url(#gCoral);opacity:.95}
 .swimmer svg{display:block;width:100%;height:auto;overflow:visible}
 @keyframes pace{0%{transform:translateX(0) scaleX(1)}46%{transform:translateX(calc(100cqw - 66px)) scaleX(1)}50%{transform:translateX(calc(100cqw - 66px)) scaleX(-1)}96%{transform:translateX(0) scaleX(-1)}100%{transform:translateX(0) scaleX(1)}}
 .tank:hover .swimmer{animation-duration:7s}
